@@ -22,6 +22,8 @@ local MAP_ITEMS =
 }
 
 function MainScene:ctor()
+    self.collisionRoadCount = 0
+
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
@@ -29,10 +31,11 @@ function MainScene:ctor()
 	baseLayer:setTouchEnabled(true)
 	baseLayer:setTouchMode(kCCTouchesOneByOne)
 
-	self.m_pOldMapBody = self:addMapBody(0)
-	self.m_pOldMap = self:addNewMap(0, self.m_pOldMapBody)
+    local startPos = 0
+	self.m_pOldMapBody = self:addMapBody(startPos)
+	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody)
 
-	local oldMapWidth = self.m_pOldMap:getContentSize().width
+	local oldMapWidth = self.m_pOldMap:getContentSize().width + startPos
 	print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
 	self.m_pNewMapBody = self:addMapBody(oldMapWidth)
 	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody)
@@ -169,6 +172,8 @@ function MainScene:createRole(pos)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
     roleBody:bind(role)
+
+    self.roleBody = roleBody
 end
 
 --bool GameLayer::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
@@ -191,22 +196,65 @@ function MainScene:addBottomLineShape()
 end
 
 function MainScene:onCollisionListener(phase, event)
-    --if phase == "begin" then
-    --    print("collision begin")
-    --    local body1 = event:getBody1()
-    --    local body2 = event:getBody2()
-    --    body1:getNode():removeFromParentAndCleanup(true)
-    --    body2:getNode():removeFromParentAndCleanup(true)
-    --    self.world:removeBody(body1, true)
-    --    self.world:removeBody(body2, true)
-    --elseif phase == "preSolve" then
-    --    print("collision preSolve")
-    --elseif phase == "postSolve" then
-    --    print("collision postSolve")
-    --elseif phase == "separate" then
-    --    print("collision separate")
-    --end
+print(phase)
+    if phase == "begin" then
+        self:onCollisionBegin(event)
+    elseif phase == "preSolve" then
+        print("collision preSolve")
+    elseif phase == "postSolve" then
+        print("collision postSolve")
+    elseif phase == "separate" then
+        self:onSeparate(event)
+    end
+end
 
+function MainScene:onCollisionBegin(event)
+    local body1 = event:getBody1()   --角色body
+    local body2 = event:getBody2()   --地图body
+    local collisionType = body2:getCollisionType()
+	print("begin collision collision_type: " .. collisionType)
+	if (collisionType == COLLISION_TYPE_ROAD) then
+		self.collisionRoadCount = self.collisionRoadCount + 1
+		--DLOG("begin collision v_x:%1.1f v_y:%1.1f, collisionRoadCount: %d",b->body->v.x,b->body->v.y, collisionRoadCount); 
+
+		local speedX, speedY = body2:getVelocity()
+		if (math.abs(speedX) < 0.1 and speedY < 0) then  --从上面撞击道路，说明是跳起落下
+			--给role一个力抵消重力
+            body1:setForce(ccp(0, -GRAVITY))
+            body1:setVelocity(ccp(0, 0))
+        end
+    elseif (collisionType == COLLISION_TYPE_ITEM1) then
+        self:gameOver()
+    elseif (collisionType == COLLISION_TYPE_BOTTOM_LINE) then
+        self:gameOver()
+    elseif (collisionType == COLLISION_TYPE_ROAD_LEFT) then
+        self:gameOver()
+    end
+
+	--每次碰撞以后强制设置速度
+	body2:setVelocity(ccp(- MAP_MOVE_SPEED, 0))
+end
+
+function MainScene:onSeparate(event)
+    local body1 = event:getBody1()   --角色body
+    local body2 = event:getBody2()   --地图body
+    local collisionType = body2:getCollisionType()
+	print("onSeparate collision_type: " .. collisionType)
+	if (collisionType == COLLISION_TYPE_ROAD) then
+		self.collisionRoadCount = self.collisionRoadCount - 1
+		--DLOG("begin collision v_x:%1.1f v_y:%1.1f, collisionRoadCount: %d",b->body->v.x,b->body->v.y, collisionRoadCount); 
+
+		--离开所有的道路，恢复重力效果
+		if (self.collisionRoadCount == 0) then
+			body1:setForce(ccp(0, 0))
+        end
+    end
+end
+
+function MainScene:gameOver()
+    MAP_MOVE_SPEED = 0
+	self.roleBody:setVelocity(ccp(0, 0))
+	print("you lose!")
 end
 
 function MainScene:onEnter()
