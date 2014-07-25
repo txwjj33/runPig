@@ -132,6 +132,11 @@ public:
     
     // delegate
     virtual void update(float dt);
+
+#if CC_LUA_ENGINE_ENABLED > 0
+	void addCollisionScriptListener(int handler, int collisionTypeA, int collisionTypeB);
+	void removeCollisionScriptListener(int collisionTypeA, int collisionTypeB);
+#endif
     
 private:
     CCPhysicsBody(CCPhysicsWorld *world);

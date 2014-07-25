@@ -72,37 +72,35 @@ function MainScene:addNewMap(posX, body)
 					local tileSize = tile:getContentSize()
 					local pos = ccpAdd(ccp(tile:getPosition()), ccp(tileSize.width / 2, tileSize.height / 2))
 
-                    local vertexes = CCPointArray:create(4)
-					vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
-					vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
-					vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
-					vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
-
-					local shape = body:addPolygonShape(vertexes)
-                    shape:setFriction(0)
-                    shape:setElasticity(0)
-
-					if (v == COLLISION_TYPE_ROAD_TOP) or (v == COLLISION_TYPE_ROAD_LEFT) then
-                        shape:setCollisionType(COLLISION_TYPE_ROAD)
-
-						local shape1 = nil
-						if (v == COLLISION_TYPE_ROAD_TOP) then
-                            shape1 = body:addSegmentShape(
+                    local shape = nil
+                    if v == COLLISION_TYPE_ROAD_TOP then
+                        shape = body:addSegmentShape(
 								ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2), 
 								ccp(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2), 1)
-						else
-							--左边的弹性屏障，上下各留点空隙，
-                            shape1 = body:addSegmentShape(
-								ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 3), 
-								ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 3), 1)
-                        end
-							
-                        shape1:setFriction(0)
-                        shape1:setElasticity(1)
-						shape1:setCollisionType(v)
-					else
-						shape:setCollisionType(v)
+                        shape:setElasticity(1)
+                    elseif v == COLLISION_TYPE_ROAD_LEFT then
+                        --左边的弹性屏障，上下各留点空隙，
+                        shape = body:addSegmentShape(
+							    ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 3), 
+							    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 3), 1)
+                        shape:setElasticity(1)
+                    elseif v == COLLISION_TYPE_ROAD then
+                        shape = body:addSegmentShape(
+								ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
+								ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
+                    else
+                        local vertexes = CCPointArray:create(4)
+					    vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
+					    vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
+					    vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+					    vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
+
+					    shape = body:addPolygonShape(vertexes)
+                        shape:setFriction(0)
+                        shape:setElasticity(0)
                     end
+
+					shape:setCollisionType(v)
                 end
             end
         end
@@ -112,6 +110,11 @@ function MainScene:addNewMap(posX, body)
 end
 
 function MainScene:update()
+    self.m_pOldMapBody:setPosition(self.m_pOldMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
+    self.m_pNewMapBody:setPosition(self.m_pNewMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
+    --self.m_pOldMapBody:setPosition(ccpSub(ccp(self.m_pOldMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
+    --self.m_pNewMapBody:setPosition(ccpSub(ccp(self.m_pNewMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
+    --body->p = cpvadd(body->p, cpvmult(cpv(-MAP_MOVE_SPEED, 0), dt));
 	local oldMapWidth = self.m_pOldMap:getContentSize().width
 	local oldBodyPos = self.m_pOldMapBody:getPositionX()
 	--地图已出界，删除旧地图，添加新地图
@@ -143,7 +146,7 @@ function MainScene:addMapBody(posX)
 	local body = CCPhysicsBody:create(self.world, 1, 1)
     self.world:addBody(body)
 	body:setPosition(ccp(posX, 0))
-	body:setVelocity(-MAP_MOVE_SPEED, 0)
+	--body:setVelocity(-MAP_MOVE_SPEED, 0)
 	body:setForce(0, -GRAVITY)
 	--body->position_func = updateBodyPostion;
 
@@ -196,15 +199,16 @@ function MainScene:addBottomLineShape()
 end
 
 function MainScene:onCollisionListener(phase, event)
-print(phase)
+    local body1 = event:getBody1()   --角色body
+    local body2 = event:getBody2()   --地图body
     if phase == "begin" then
-        self:onCollisionBegin(event)
+        return self:onCollisionBegin(event)
     elseif phase == "preSolve" then
-        print("collision preSolve")
+        return true
     elseif phase == "postSolve" then
-        print("collision postSolve")
+        return true
     elseif phase == "separate" then
-        self:onSeparate(event)
+        return self:onSeparate(event)
     end
 end
 
@@ -217,12 +221,9 @@ function MainScene:onCollisionBegin(event)
 		self.collisionRoadCount = self.collisionRoadCount + 1
 		--DLOG("begin collision v_x:%1.1f v_y:%1.1f, collisionRoadCount: %d",b->body->v.x,b->body->v.y, collisionRoadCount); 
 
-		local speedX, speedY = body2:getVelocity()
-		if (math.abs(speedX) < 0.1 and speedY < 0) then  --从上面撞击道路，说明是跳起落下
-			--给role一个力抵消重力
-            body1:setForce(ccp(0, -GRAVITY))
-            body1:setVelocity(ccp(0, 0))
-        end
+		--给role一个力抵消重力
+        body1:setForce(ccp(0, -GRAVITY))
+        body1:setVelocity(ccp(0, 0))
     elseif (collisionType == COLLISION_TYPE_ITEM1) then
         self:gameOver()
     elseif (collisionType == COLLISION_TYPE_BOTTOM_LINE) then
@@ -232,7 +233,9 @@ function MainScene:onCollisionBegin(event)
     end
 
 	--每次碰撞以后强制设置速度
-	body2:setVelocity(ccp(- MAP_MOVE_SPEED, 0))
+	body2:setVelocity(ccp(0, 0))
+
+    return true
 end
 
 function MainScene:onSeparate(event)
@@ -249,6 +252,8 @@ function MainScene:onSeparate(event)
 			body1:setForce(ccp(0, 0))
         end
     end
+
+    return true
 end
 
 function MainScene:gameOver()
