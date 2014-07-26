@@ -27,17 +27,25 @@ function MainScene:ctor()
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
-    local baseLayer = display.newLayer()
-	baseLayer:setTouchEnabled(true)
-	baseLayer:setTouchMode(kCCTouchesOneByOne)
+    --function touched()
+    --    if (self.collisionRoadCount > 0) then
+    --        self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+    --    end
+    --end
+
+    --self:setTouchEnabled(true)
+    --self:setTouchMode(kCCTouchesOneByOne)
+    --self:addNodeEventListener(cc.NODE_TOUCH_EVENT, touched)
+
+    
 
     local startPos = 0
-	self.m_pOldMapBody = self:addMapBody(startPos)
+	self.m_pOldMapBody = {}
 	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody)
 
 	local oldMapWidth = self.m_pOldMap:getContentSize().width + startPos
 	print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
-	self.m_pNewMapBody = self:addMapBody(oldMapWidth)
+	self.m_pNewMapBody = {}
 	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody)
 
 	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
@@ -50,9 +58,18 @@ function MainScene:ctor()
     -- add debug node
     self.worldDebug = self.world:createDebugNode()
     self:addChild(self.worldDebug)
+
+    local baseLayer = display.newLayer()
+	baseLayer:setTouchEnabled(true)
+    self:addChild(baseLayer)
+    baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
+        if (self.collisionRoadCount > 0) then
+            self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+        end
+    end)
 end
 
-function MainScene:addNewMap(posX, body)
+function MainScene:addNewMap(posX, bodys)
 	local mapID = math.random(1, MAP_COUNT)
 	print("create new map, id: %d", mapID)
     local mapPath = string.format("map%d.tmx", mapID)
@@ -60,7 +77,22 @@ function MainScene:addNewMap(posX, body)
 	map:setPosition(posX, 0)
     self:addChild(map)
 
-    body:bind(map)
+    local function getBody(collitionType)
+        if bodys[collitionType] then 
+            return bodys[collitionType]
+        else
+            local body = self:addMapBody(posX)
+            body:bind(map)
+            bodys[collitionType] = body
+            return body
+        end
+    end
+
+    --添加road对应的形状
+    local function addRoadShape(collitionType, pos1, pos2)
+        local shape = getBody(collitionType):addSegmentShape(pos1, pos2, 1)
+        shape:setCollisionType(collitionType)
+    end
 
 	for layerName, v in pairs(MAP_ITEMS) do
 		local layer = map:layerNamed(layerName)
@@ -74,15 +106,17 @@ function MainScene:addNewMap(posX, body)
 
                     local shape = nil
                     if v == COLLISION_TYPE_ROAD_TOP then
-                        shape = body:addSegmentShape(
+                        shape = getBody(COLLISION_TYPE_ROAD_TOP):addSegmentShape(
 								ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2), 
 								ccp(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2), 1)
                         shape:setElasticity(1)
+
+                        --添加
                     elseif v == COLLISION_TYPE_ROAD_LEFT then
                         --左边的弹性屏障，上下各留点空隙，
                         shape = body:addSegmentShape(
-							    ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 3), 
-							    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 3), 1)
+							    ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 5), 
+							    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 5), 1)
                         shape:setElasticity(1)
                     elseif v == COLLISION_TYPE_ROAD then
                         shape = body:addSegmentShape(
@@ -109,14 +143,16 @@ function MainScene:addNewMap(posX, body)
 	return map
 end
 
-function MainScene:update()
-    self.m_pOldMapBody:setPosition(self.m_pOldMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
-    self.m_pNewMapBody:setPosition(self.m_pNewMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
+function MainScene:update(dt)
+    --print("dt" .. dt)
+    --self.m_pOldMapBody:setPosition(self.m_pOldMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
+    --self.m_pNewMapBody:setPosition(self.m_pNewMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
+     --print("dt" .. dt .. "end")
     --self.m_pOldMapBody:setPosition(ccpSub(ccp(self.m_pOldMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
     --self.m_pNewMapBody:setPosition(ccpSub(ccp(self.m_pNewMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
     --body->p = cpvadd(body->p, cpvmult(cpv(-MAP_MOVE_SPEED, 0), dt));
 	local oldMapWidth = self.m_pOldMap:getContentSize().width
-	local oldBodyPos = self.m_pOldMapBody:getPositionX()
+	local oldBodyPos = self.m_pOldMap:getPosition()
 	--地图已出界，删除旧地图，添加新地图
 	if (oldBodyPos <= - oldMapWidth) then
 		self:removeOldMapAddNewMap()
@@ -128,15 +164,18 @@ function MainScene:removeOldMapAddNewMap()
 
 	--移除旧地图
 	self.m_pOldMap:removeFromParent()
-    self.m_pOldMapBody:removeSelf()
+    for _, v in ipairs(self.m_pOldMapBody) do
+        v:removeSelf()
+    end
 
 	--将之前的新地图赋值给旧地图
 	self.m_pOldMap = self.m_pNewMap
 	self.m_pOldMapBody = self.m_pNewMapBody
 
 	--创建新地图
-	local newMapPosX = self.m_pOldMapBody:getPositionX() + self.m_pOldMap:getContentSize().width
-	self.m_pNewMapBody = self:addMapBody(newMapPosX)
+    local odMapPosX = self.m_pOldMap:getPosition()
+	local newMapPosX = odMapPosX + self.m_pOldMap:getContentSize().width
+	self.m_pNewMapBody = {}
 	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody)
 
 	print("end create new map")
@@ -146,7 +185,7 @@ function MainScene:addMapBody(posX)
 	local body = CCPhysicsBody:create(self.world, 1, 1)
     self.world:addBody(body)
 	body:setPosition(ccp(posX, 0))
-	--body:setVelocity(-MAP_MOVE_SPEED, 0)
+	body:setVelocity(-MAP_MOVE_SPEED, 0)
 	body:setForce(0, -GRAVITY)
 	--body->position_func = updateBodyPostion;
 
@@ -157,7 +196,7 @@ function MainScene:createRole(pos)
 	local layer = self.m_pOldMap:layerNamed("road")
 	local tilePos = layer:positionAt(pos)
 
-	local role = display.newSprite("grapes.png")
+	local role = display.newSprite("grossini.png")
     self:addChild(role)
 
 	local roleSize = role:getContentSize()
@@ -181,10 +220,7 @@ end
 
 --bool GameLayer::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
 --{
---	if (collisionRoadCount > 0)
---	{
---		m_pRole->getCPBody()->v = cpv(0, ROLE_JUMP_SPEED);
---	}
+--	
 
 --	return true;
 --}
@@ -199,13 +235,47 @@ function MainScene:addBottomLineShape()
 end
 
 function MainScene:onCollisionListener(phase, event)
-    local body1 = event:getBody1()   --角色body
-    local body2 = event:getBody2()   --地图body
     if phase == "begin" then
         return self:onCollisionBegin(event)
     elseif phase == "preSolve" then
-        return true
+        --local body1 = event:getBody1()   --地图body
+        --local body2 = event:getBody2()   --地图body
+        --local x1, y1 = body1:getPosition()
+        --local x2, y2 = body2:getPosition()
+        --self.body1PrePos = ccp(body1:getPosition())
+        --self.body2PrePos = ccp(body2:getPosition())
+        ----event:setSurfaceVelocities(0, 0)
+        --local collisionType = body2:getCollisionType()
+        --if (collisionType == COLLISION_TYPE_ROAD) then
+            --body1:setVelocity(ccp(0, 0))
+            --body1:setForce(ccp(0, -GRAVITY))
+        --end
+        return false
     elseif phase == "postSolve" then
+        local body1 = event:getBody1()   --地图body
+        local body2 = event:getBody2()   --地图body
+        local x1, y1 = body1:getPosition()
+        local x2, y2 = body2:getPosition()
+        --body1:setPosition(self.body1PrePos)
+        --body2:setPosition(self.body2PrePos)
+        local collisionType = body2:getCollisionType()
+	    print("begin collision collision_type: " .. collisionType)
+	    if (collisionType == COLLISION_TYPE_ROAD) then
+		    --self.collisionRoadCount = self.collisionRoadCount + 1
+		    ----给role一个力抵消重力
+      --      body1:setForce(ccp(0, -GRAVITY))
+      --      body1:setVelocity(ccp(0, 0))
+        --elseif (collisionType == COLLISION_TYPE_ITEM1) then
+        --    self:gameOver()
+        --elseif (collisionType == COLLISION_TYPE_BOTTOM_LINE) then
+        --    self:gameOver()
+        --elseif (collisionType == COLLISION_TYPE_ROAD_LEFT) then
+        --    self:gameOver()
+        elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
+            local vx, vy = body1:getVelocity()
+            print(vx .. vy)
+            --body1:setVelocity(vx, -vy)
+        end
         return true
     elseif phase == "separate" then
         return self:onSeparate(event)
@@ -213,14 +283,12 @@ function MainScene:onCollisionListener(phase, event)
 end
 
 function MainScene:onCollisionBegin(event)
-    local body1 = event:getBody1()   --角色body
+    local body1 = event:getBody1()   --地图body
     local body2 = event:getBody2()   --地图body
     local collisionType = body2:getCollisionType()
 	print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount + 1
-		--DLOG("begin collision v_x:%1.1f v_y:%1.1f, collisionRoadCount: %d",b->body->v.x,b->body->v.y, collisionRoadCount); 
-
 		--给role一个力抵消重力
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
@@ -230,23 +298,29 @@ function MainScene:onCollisionBegin(event)
         self:gameOver()
     elseif (collisionType == COLLISION_TYPE_ROAD_LEFT) then
         self:gameOver()
+    elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
+        local vx, vy = body1:getVelocity()
+        print(vx .. vy)
+        if vy > 0 then
+            body1:setVelocity(vx, -vy)
+        end
     end
 
 	--每次碰撞以后强制设置速度
-	body2:setVelocity(ccp(0, 0))
+	--body2:setVelocity(ccp(-MAP_MOVE_SPEED, 0))
 
-    return true
+    return false
 end
 
 function MainScene:onSeparate(event)
-    local body1 = event:getBody1()   --角色body
+    local body1 = event:getBody1()   --地图body
     local body2 = event:getBody2()   --地图body
+
     local collisionType = body2:getCollisionType()
 	print("onSeparate collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
-		--DLOG("begin collision v_x:%1.1f v_y:%1.1f, collisionRoadCount: %d",b->body->v.x,b->body->v.y, collisionRoadCount); 
-
+		
 		--离开所有的道路，恢复重力效果
 		if (self.collisionRoadCount == 0) then
 			body1:setForce(ccp(0, 0))
@@ -257,7 +331,7 @@ function MainScene:onSeparate(event)
 end
 
 function MainScene:gameOver()
-    MAP_MOVE_SPEED = 0
+    self.world:stop()
 	self.roleBody:setVelocity(ccp(0, 0))
 	print("you lose!")
 end
@@ -265,8 +339,8 @@ end
 function MainScene:onEnter()
     self.world:start()
     
-    scheduler.scheduleUpdateGlobal(function()
-        self:update()
+    scheduler.scheduleUpdateGlobal(function(dt)
+        self:update(dt)
     end)
 end
 
