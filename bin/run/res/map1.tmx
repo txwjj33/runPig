@@ -6,6 +6,9 @@
  <tileset firstgid="2" name="item1" tilewidth="32" tileheight="32">
   <image source="tiles/item1.png" width="32" height="32"/>
  </tileset>
+ <tileset firstgid="3" name="strawberry大的" tilewidth="32" tileheight="32">
+  <image source="strawberry.png" width="128" height="128"/>
+ </tileset>
  <layer name="road" width="120" height="10">
   <data encoding="base64" compression="zlib">
    eJzt0sEJACAMBMHYf9NiA3lIjCvuQP7HXSIkSfrTSE51qjrO9qLt15GT3MVLWy2Enbo7oeTYReryNOL/SNINE2+ZAGw=
@@ -14,11 +17,6 @@
  <layer name="road_top" width="120" height="10">
   <data encoding="base64" compression="zlib">
    eJzt0TEKADAIA0D7/093d+hmkHIHmaOkKue0sFPfaWqzV0/qhrTf/wMAAIAJFzwCACM=
-  </data>
- </layer>
- <layer name="road_left" width="120" height="10">
-  <data encoding="base64" compression="zlib">
-   eJzt08ENACAIA0Dcf2nffg0hmt4tQGihas4anMW9qZ4S7yFxZ3iZn5zRlbO+TvLok5hl4s4A/G0DjNgACw==
   </data>
  </layer>
 </map>

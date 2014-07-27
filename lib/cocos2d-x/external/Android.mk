@@ -26,6 +26,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH) \
                            $(LOCAL_PATH)/extra \
+                           $(LOCAL_PATH)/extra/apptools \
                            $(LOCAL_PATH)/extra/luabinding \
                            $(LOCAL_PATH)/chipmunk/include \
                            $(LOCAL_PATH)/chipmunk/cocos2dx_support \

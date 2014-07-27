@@ -1,5 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
+COCOS2DX_PATH := $(LOCAL_PATH)/../../../../lib/cocos2d-x
+
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := game_shared
