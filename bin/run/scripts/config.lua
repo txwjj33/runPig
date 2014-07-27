@@ -3,6 +3,8 @@
 DEBUG = 2
 DEBUG_FPS = true
 
+math.randomseed(os.time())
+
 -- design resolution
 CONFIG_SCREEN_WIDTH  = 640
 CONFIG_SCREEN_HEIGHT = 960
@@ -14,18 +16,21 @@ GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
 MAP_MOVE_SPEED = 200
-ROLE_JUMP_SPEED = 400
+ROLE_JUMP_SPEED = 500
 GRAVITY = -800
 
 ROLE_POS_X = 5
-ROLE_POS_Y = 3
+ROLE_POS_Y = 5
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 
+DIAMOND_SCORE = 100
+
 --每个大关卡对应的小关卡数量
 LEVEL_NUM_CONF = 
 {
+    [0] = 1,
     [1] = 6,
     [2] = 4,
     [3] = 3,
@@ -38,7 +43,23 @@ LEVEL_NUM_CONF =
     [9] = 1,
 }
 
-LEVEL_RECYCLE = 
+--循环地图难度的最小最大值
+LEVEL_RECYCLE_MIN = 7
+LEVEL_RECYCLE_MAX = 9
+
+checkMap = true
+if checkMap then
+    for k, v in ipairs(LEVEL_NUM_CONF) do
+        for i = 1, v do
+            local mapPath = string.format("levels/%d.%d.tmx", k, i)
+            print(mapPath)
+	        local map = CCTMXTiledMap:create(mapPath)
+            if not map then
+                print(mapPath .. "does not exist or has problems")
+            end
+        end
+    end
+end
 
 
 ---- 0 - disable debug info, 1 - less debug info, 2 - verbose debug info

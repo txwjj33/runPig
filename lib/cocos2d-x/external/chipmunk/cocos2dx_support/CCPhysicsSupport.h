@@ -126,6 +126,7 @@ private:
 
 class CCPhysicsWorld;
 class CCPhysicsBody;
+class CCPhysicsShape;
 
 class CCPhysicsCollisionEvent : public CCObject
 {
@@ -137,6 +138,9 @@ public:
     
     CCPhysicsBody *getBody1(void);
     CCPhysicsBody *getBody2(void);
+
+	CCPhysicsShape *getShape1(void);
+	CCPhysicsShape *getShape2(void);
     
     // Returns true if this is the first step the two shapes started touching. This can be useful for sound effects for instance. If it’s the first frame for a certain collision, check the energy of the collision in a postStep() callbock and use that to determine the volume of a sound effect to play.
     bool isFirstContact(void);
@@ -179,6 +183,8 @@ private:
     , m_arbiter(arbiter)
     , m_body1(NULL)
     , m_body2(NULL)
+	, m_shape1(NULL)
+	, m_shape2(NULL)
     {
     }
     bool initWithWorld(CCPhysicsWorld *world);
@@ -187,6 +193,8 @@ private:
     cpArbiter *m_arbiter;
     cpBody *m_body1;
     cpBody *m_body2;
+	cpShape *m_shape1;
+	cpShape *m_shape2;
 };
 
 // ----------------------------------------

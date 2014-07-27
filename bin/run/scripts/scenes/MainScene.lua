@@ -7,18 +7,36 @@ end)
 COLLISION_TYPE_BOTTOM_LINE = 0   --下面的线用来判定玩家死亡
 COLLISION_TYPE_ROLE        = 1
 COLLISION_TYPE_ROAD        = 2
-COLLISION_TYPE_ITEM1  = 3
-COLLISION_TYPE_ROAD_TOP  = 4
-COLLISION_TYPE_ROAD_LEFT = 5
+COLLISION_TYPE_ROAD_TOP  = 3
+COLLISION_TYPE_ROAD_LEFT = 4
+COLLISION_TYPE_DIAMOND = 5
+COLLISION_TYPE_STUCK1 = 10
+COLLISION_TYPE_STUCK2 = 11
+COLLISION_TYPE_STUCK3 = 12
+COLLISION_TYPE_STUCK4 = 13
 
 MAP_COUNT = 1
 
+local currentLevel = -1
+local score = 0
+--钻石shape与
+local diamondTable = {}
+
 local MAP_ITEMS = 
 {
-    road = COLLISION_TYPE_ROAD,
-    --item1 = COLLISION_TYPE_ITEM1,
-    road_top = COLLISION_TYPE_ROAD_TOP,
+     road1 = COLLISION_TYPE_ROAD,
+     road2 = COLLISION_TYPE_ROAD_TOP,
+     diamond = COLLISION_TYPE_DIAMOND,
+     stuck1 = COLLISION_TYPE_STUCK1,
+     stuck2 = COLLISION_TYPE_STUCK2,
+     stuck3 = COLLISION_TYPE_STUCK3,
+     stuck4 = COLLISION_TYPE_STUCK4,
 }
+
+function restartGame()
+    currentLevel = -1
+    score = 0
+end
 
 function MainScene:addCollisionScriptListener(collitionType)
     self.world:addCollisionScriptListener(handler(self, self.onCollisionListener), COLLISION_TYPE_ROLE, collitionType)
@@ -30,26 +48,16 @@ function MainScene:ctor()
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
-    --function touched()
-    --    if (self.collisionRoadCount > 0) then
-    --        self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
-    --    end
-    --end
-
-    --self:setTouchEnabled(true)
-    --self:setTouchMode(kCCTouchesOneByOne)
-    --self:addNodeEventListener(cc.NODE_TOUCH_EVENT, touched)
-
-    
-
     local startPos = 0
 	self.m_pOldMapBody = {}
-	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody)
+    self.m_pOldDiamonds = {}
+	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody, self.m_pOldDiamonds)
 
 	local oldMapWidth = self.m_pOldMap:getContentSize().width + startPos
 	print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
 	self.m_pNewMapBody = {}
-	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody)
+    self.m_pNewDiamonds = {}
+	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody, self.m_pNewDiamonds)
 
 	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
 	self:addBottomLineShape()
@@ -73,10 +81,19 @@ function MainScene:ctor()
     end)
 end
 
-function MainScene:addNewMap(posX, bodys)
-	local mapID = math.random(1, MAP_COUNT)
-	print("create new map, id: %d", mapID)
-    local mapPath = string.format("map%d.tmx", mapID)
+function MainScene:addNewMap(posX, bodys, diamondTable)
+    currentLevel = currentLevel + 1
+    local levelID = nil
+    if currentLevel <= LEVEL_RECYCLE_MIN then
+        levelID = currentLevel
+    else
+        levelID = math.random(LEVEL_RECYCLE_MIN, LEVEL_RECYCLE_MAX)
+    end
+
+    local mapID = math.random(1, LEVEL_NUM_CONF[levelID])
+    local mapPath = string.format("levels/%d.%d.tmx", levelID, mapID)
+	print("create new map: " .. mapPath)
+    
 	local map = CCTMXTiledMap:create(mapPath)
 	map:setPosition(posX, 0)
     self:addChild(map)
@@ -100,58 +117,56 @@ function MainScene:addNewMap(posX, bodys)
 
 	for layerName, v in pairs(MAP_ITEMS) do
 		local layer = map:layerNamed(layerName)
-		local mapSize = map:getMapSize()
-		for x = 0, mapSize.width - 1 do
-			for y = 0, mapSize.height - 1 do
-				local tile = layer:tileAt(ccp(x, y))
-				if tile then
-                    local tileSize = tile:getContentSize()
-					local pos = ccpAdd(ccp(tile:getPosition()), ccp(tileSize.width / 2, tileSize.height / 2))
+        if not layer then
+            --do nothing
+        else
+		    local mapSize = map:getMapSize()
+		    for x = 0, mapSize.width - 1 do
+			    for y = 0, mapSize.height - 1 do
+				    local tile = layer:tileAt(ccp(x, y))
+				    if tile then
+                        local tileSize = tile:getContentSize()
+					    local pos = ccpAdd(ccp(tile:getPosition()), ccp(tileSize.width / 2, tileSize.height / 2))
 
-                    --检查是不是最左边的road
-                    local function checkLeftRoad()
-                        if (x == 0) or ( not layer:tileAt(ccp(x - 1, y)) ) then
-                            addRoadShape(COLLISION_TYPE_ROAD_LEFT,
-								ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 3), 
-								ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 3))
+                        --检查是不是最左边的road
+                        local function checkLeftRoad()
+                            if (x == 0) or ( not layer:tileAt(ccp(x - 1, y)) ) then
+                                addRoadShape(COLLISION_TYPE_ROAD_LEFT,
+								    ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 5), 
+								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 5))
+                            end
                         end
-                    end
 
-                    if v == COLLISION_TYPE_ROAD_TOP then
-                        addRoadShape(COLLISION_TYPE_ROAD_TOP,
-								    ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2), 
-								    ccp(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
+                        if v == COLLISION_TYPE_ROAD_TOP then
+                            addRoadShape(COLLISION_TYPE_ROAD_TOP,
+								        ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2), 
+								        ccp(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
-                        addRoadShape(COLLISION_TYPE_ROAD,
-								ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-								ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+                            addRoadShape(COLLISION_TYPE_ROAD,
+								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
+								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 
-                        checkLeftRoad()
+                            checkLeftRoad()
+                        elseif v == COLLISION_TYPE_ROAD then
+                            addRoadShape(COLLISION_TYPE_ROAD,
+								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
+								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 
-                        --添加
-                    --elseif v == COLLISION_TYPE_ROAD_LEFT then
-           --             --左边的弹性屏障，上下各留点空隙，
-           --             shape = body:addSegmentShape(
-							    --ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 5), 
-							    --ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 5), 1)
-           --             shape:setElasticity(1)
-                    elseif v == COLLISION_TYPE_ROAD then
-                        addRoadShape(COLLISION_TYPE_ROAD,
-								ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-								ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+                            checkLeftRoad()
+                        else
+                            local vertexes = CCPointArray:create(4)
+					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
-                        checkLeftRoad()
-                    else
-                        local vertexes = CCPointArray:create(4)
-					    vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
-					    vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
-					    vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
-					    vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
+					        local shape = getBody(v):addPolygonShape(vertexes)
+                            shape:setCollisionType(v)
 
-					    local shape = getBody(v):addPolygonShape(vertexes)
-                        shape:setCollisionType(v)
-                        --shape:setFriction(0)
-                        --shape:setElasticity(0)
+                            if v == COLLISION_TYPE_DIAMOND then
+                                diamondTable[shape] = tile
+                            end
+                        end
                     end
                 end
             end
@@ -182,19 +197,21 @@ function MainScene:removeOldMapAddNewMap()
 
 	--移除旧地图
 	self.m_pOldMap:removeFromParent()
-    for _, v in ipairs(self.m_pOldMapBody) do
+    for _, v in pairs(self.m_pOldMapBody) do
         v:removeSelf()
     end
 
 	--将之前的新地图赋值给旧地图
 	self.m_pOldMap = self.m_pNewMap
 	self.m_pOldMapBody = self.m_pNewMapBody
+    self.m_pOldDiamonds = self.m_pNewDiamonds
 
 	--创建新地图
     local odMapPosX = self.m_pOldMap:getPosition()
 	local newMapPosX = odMapPosX + self.m_pOldMap:getContentSize().width
 	self.m_pNewMapBody = {}
-	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody)
+    self.m_pNewDiamonds = {}
+	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody, self.m_pNewDiamonds)
 
 	print("end create new map")
 end
@@ -211,7 +228,7 @@ function MainScene:addMapBody(posX)
 end
 
 function MainScene:createRole(pos)
-	local layer = self.m_pOldMap:layerNamed("road")
+	local layer = self.m_pOldMap:layerNamed("road1")
 	local tilePos = layer:positionAt(pos)
 
 	local role = display.newSprite("grossini.png")
@@ -235,14 +252,6 @@ function MainScene:createRole(pos)
 
     self.roleBody = roleBody
 end
-
---bool GameLayer::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent)
---{
---	
-
---	return true;
---}
-
 
 function MainScene:addBottomLineShape()
     local bottomWallBody = self.world:createBoxBody(0, WIN_WIDTH, 1)
@@ -305,24 +314,32 @@ function MainScene:onCollisionBegin(event)
     local body1 = event:getBody1()   --地图body
     local body2 = event:getBody2()   --地图body
     local collisionType = body2:getCollisionType()
-	print("begin collision collision_type: " .. collisionType)
+	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount + 1
 		--给role一个力抵消重力
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
-    elseif (collisionType == COLLISION_TYPE_ITEM1) then
-        self:gameOver()
-    elseif (collisionType == COLLISION_TYPE_BOTTOM_LINE) then
-        self:gameOver()
-    elseif (collisionType == COLLISION_TYPE_ROAD_LEFT) then
-        self:gameOver()
     elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
         local vx, vy = body1:getVelocity()
         print(vx .. vy)
         if vy > 0 then
             body1:setVelocity(vx, -vy)
         end
+    elseif (collisionType == COLLISION_TYPE_DIAMOND) then
+        score = score + DIAMOND_SCORE
+        local shape2 = event:getShape2()
+        if self.m_pOldDiamonds[shape2] then
+            self.m_pOldDiamonds[shape2]:removeFromParent()
+            body2:removeShape(shape2)
+            print("remove diamond")
+        elseif self.m_pNewDiamonds[shape2] then
+            self.m_pNewDiamonds[shape2]:removeFromParent()
+            body2:removeShape(shape2)
+            print("remove diamond")
+        end
+    else
+        self:gameOver()
     end
 
 	--每次碰撞以后强制设置速度
@@ -336,7 +353,7 @@ function MainScene:onSeparate(event)
     local body2 = event:getBody2()   --地图body
 
     local collisionType = body2:getCollisionType()
-	print("onSeparate collision_type: " .. collisionType)
+	--print("onSeparate collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
 		

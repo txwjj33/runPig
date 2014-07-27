@@ -31,11 +31,6 @@
    eJxjYBgF5AJGNIxNHJs6fHKjABXgCjt8YToKRsEoGAWjYBSMglEwmAAAHusAHg==
   </data>
  </layer>
- <layer name="diamond" width="61" height="12">
-  <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20KP6AAAICXAQtwAAE=
-  </data>
- </layer>
  <layer name="stuck1" width="61" height="12">
   <data encoding="base64" compression="zlib">
    eJxjYBgFo2AU0BuwDbQDBgiMVH+PglEwCkbBKBjZAABlQAAN

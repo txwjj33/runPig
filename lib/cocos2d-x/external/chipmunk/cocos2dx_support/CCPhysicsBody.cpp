@@ -556,3 +556,17 @@ CCPhysicsShape *CCPhysicsBody::addShape(cpShape *shape)
     m_shapes->addObject(shapeObject);
     return shapeObject;
 }
+
+CCPhysicsShape* CCPhysicsBody::getShape(cpShape *shape)
+{
+	unsigned int count = m_shapes->count();
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		CCPhysicsShape *shapeObj = static_cast<CCPhysicsShape*>(m_shapes->objectAtIndex(i));
+		if (shapeObj->getShape() == shape)
+		{
+			return shapeObj;
+		}
+	}
+	return NULL;
+}

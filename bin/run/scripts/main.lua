@@ -6,5 +6,6 @@ function __G__TRACKBACK__(errorMessage)
     print("----------------------------------------")
 end
 
+CCFileUtils:sharedFileUtils():addSearchPath("res/")
 require("game")
 game.startup()

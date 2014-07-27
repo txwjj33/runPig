@@ -109,7 +109,7 @@ debug
 	
 	<target name="copy_final_file"
             description="rename the apk" >
-		<property name="zjh.final.file" location="${apk.output.dir}/sailing-${build.number}-${build.target}.apk" />
+		<property name="zjh.final.file" location="${apk.output.dir}/run-${build.number}-${build.target}.apk" />
         <delete file="${zjh.final.file}" quiet="true" />
         <copy file="${out.final.file}" tofile="${zjh.final.file}" />
         <echo>copy ${out.final.file} to ${zjh.final.file}</echo>

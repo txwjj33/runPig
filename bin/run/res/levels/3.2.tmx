@@ -26,17 +26,17 @@
  </tileset>
  <layer name="road1" width="26" height="12">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2B4A0YCGJs6csymhvuoZeYogAAAJnQAFQ==
-  </data>
- </layer>
- <layer name="diamond" width="26" height="12">
-  <data encoding="base64" compression="zlib">
-   eJxjYBgFo2DwAeaBdgCdACMB/iigDAAADmgABg==
+   eJxjYBgFo2B4A0YCGJs6csympdtGAXkAACkkABc=
   </data>
  </layer>
  <layer name="stuck1" width="26" height="12">
   <data encoding="base64" compression="zlib">
    eJxjYBgFo2AUoAMOAvxRMDQAACDgABE=
+  </data>
+ </layer>
+ <layer name="diamond" width="26" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2DwAeaBdsAoGBYAAAu4AAQ=
   </data>
  </layer>
 </map>

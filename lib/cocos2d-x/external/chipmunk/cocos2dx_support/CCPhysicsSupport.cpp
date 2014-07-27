@@ -311,7 +311,8 @@ CCPhysicsCollisionEvent::~CCPhysicsCollisionEvent(void)
 bool CCPhysicsCollisionEvent::initWithWorld(CCPhysicsWorld *world)
 {
     m_world = world;
-    cpArbiterGetBodies(m_arbiter, &m_body1, &m_body2);
+	cpArbiterGetBodies(m_arbiter, &m_body1, &m_body2);
+	cpArbiterGetShapes(m_arbiter, &m_shape1, &m_shape2);
     return true;
 }
 
@@ -420,6 +421,16 @@ void *CCPhysicsCollisionEvent::getUserData(void)
 void CCPhysicsCollisionEvent::setUserData(void *userdata)
 {
     m_arbiter->data = userdata;
+}
+
+CCPhysicsShape * CCPhysicsCollisionEvent::getShape1(void)
+{
+	return getBody1()->getShape(m_shape1);
+}
+
+CCPhysicsShape * CCPhysicsCollisionEvent::getShape2(void)
+{
+	return getBody2()->getShape(m_shape2);
 }
 
 // ----------------------------------------

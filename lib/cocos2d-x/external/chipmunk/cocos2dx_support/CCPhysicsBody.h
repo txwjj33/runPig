@@ -126,17 +126,13 @@ public:
     void removeShapeAtIndex(unsigned int index);
     void removeShape(CCPhysicsShape *shapeObject);
     void removeAllShape(void);
+	CCPhysicsShape* getShape(cpShape *shape);
     
 	// cleanup
 	void removeSelf(bool unbindNow = true);
     
     // delegate
     virtual void update(float dt);
-
-#if CC_LUA_ENGINE_ENABLED > 0
-	void addCollisionScriptListener(int handler, int collisionTypeA, int collisionTypeB);
-	void removeCollisionScriptListener(int collisionTypeA, int collisionTypeB);
-#endif
     
 private:
     CCPhysicsBody(CCPhysicsWorld *world);
