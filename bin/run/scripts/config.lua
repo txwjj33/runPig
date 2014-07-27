@@ -23,6 +23,22 @@ ROLE_POS_Y = 3
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 
+--每个大关卡对应的小关卡数量
+LEVEL_NUM_CONF = 
+{
+    [1] = 6,
+    [2] = 4,
+    [3] = 3,
+    [4] = 2,
+    [5] = 2,
+    [6] = 2,
+    [7] = 2,
+    [8] = 1,
+    [8] = 1,
+    [9] = 1,
+}
+
+LEVEL_RECYCLE = 
 
 
 ---- 0 - disable debug info, 1 - less debug info, 2 - verbose debug info

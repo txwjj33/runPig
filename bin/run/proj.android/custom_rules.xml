@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+<!--
+debug
+	|-set-debug-files
+	|		|-set-mode-check
+	|
+	|-do-debug
+	|	|-set-debug-mode
+	|	|		|-setup
+	|	|			|	-check-env
+	|	|				
+	|	|-debug-obfuscation-check
+	|	|-package
+	|	|	|-dex
+	|	|	|	|-compile
+	|	|	|	|	|-build-setup
+	|	|	|	|	|		|-setup	[debug->do-debug->set-deubg-mode->setup与上一个相同]
+	|	|	|	|	|						
+	|	|	|	|	|-pre-build		[留给用户重写]
+	|	|	|	|	|-code-gen
+	|	|	|	|	|-pre-compile	[留给用户重写]
+	|	|	|	|			
+	|	|	|	|-post-compile		[留给用户重写]
+	|	|	|	|-obfuscate
+	|	|	|	
+	|	|	|-package-resources
+	|	|			|-crunch
+	|	|				
+	|	|-post-package				[留给用户重写]
+	|			
+	|-post-build					[留给用户重写]
+-->		
+	
+    <!-- empty default pre-clean target. Create a similar target in
+         your build.xml and it'll be called instead of this one. -->
+    <target name="-pre-clean">
+    	<echo>ant build : -pre-clean</echo>
+    </target>
+    
+	<!-- empty default pre-build target. Create a similar target in
+         your build.xml and it'll be called instead of this one. -->
+    <target name="-pre-build">
+    	<echo>ant build : -pre-build</echo>
+    	<echo>package name: ${project.app.package}</echo>
+    </target>
+    
+	<!-- empty default pre-compile target. Create a similar target in
+         your build.xml and it'll be called instead of this one. -->
+    <target name="-pre-compile">
+    	<echo>ant build : -pre-compile</echo>
+    </target>
+    
+	<!-- empty default post-compile target. Create a similar target in
+         your build.xml and it'll be called instead of this one. -->
+    <target name="-post-compile">
+		<echo>ant build : -post-compile</echo>
+    </target>
+    
+	<!-- disable proguard -->
+    <target name="-release-obfuscation-check">
+        <echo level="info">proguard.config is ${proguard.config}</echo>
+        <condition property="proguard.enabled" value="false" else="false">
+            <and>
+                <isset property="build.is.mode.release" />
+                <isset property="proguard.config" />
+            </and>
+        </condition>
+        <if condition="${proguard.enabled}">
+            <then>
+                <echo level="info">Proguard.config is enabled</echo>
+                <!-- Secondary dx input (jar files) is empty since all the
+                     jar files will be in the obfuscated jar -->
+                <path id="out.dex.jar.input.ref" />
+            </then>
+        </if>
+    </target>
+	
+    <target name="-post-package">
+    	<echo>ant build : -post-package</echo>
+    </target>
+    
+    <target name="-post-build">    
+    	<echo>ant build : -post-build</echo>
+    </target>
+    
+    <!--需要在set debug/release mode才能调用 -->
+	<target name="debuggable" >
+    	<echo message="whether debug mode ?" />
+    	<condition property="debuggable" >
+			<equals arg1="${build.target}" arg2="debug" />
+    	</condition>
+	</target>
+
+	<target name="launch" depends="-setup">
+		<echo>launch application</echo>
+		<exec executable="${adb}" failonerror="true">
+			<arg line="${adb.device.arg}" />
+            <arg value="shell" />
+			<arg value="am" />
+			<arg value="start" />
+ 			<arg value="-n" />
+			<arg value="${project.app.package}/${launcher.activity}" />
+		</exec>
+    </target>
+	 
+	<target name="install-debug-start" depends="debug, install, launch"
+            description="Installs the debug package and run the app" />
+	
+	<target name="copy_final_file"
+            description="rename the apk" >
+		<property name="zjh.final.file" location="${apk.output.dir}/sailing-${build.number}-${build.target}.apk" />
+        <delete file="${zjh.final.file}" quiet="true" />
+        <copy file="${out.final.file}" tofile="${zjh.final.file}" />
+        <echo>copy ${out.final.file} to ${zjh.final.file}</echo>
+    </target>
+	
+    <macrodef name="signjarjdk">
+        <attribute name="jar" />
+        <attribute name="signedjar" />
+        <attribute name="keystore" />
+        <attribute name="storepass" />
+        <attribute name="alias" />
+        <attribute name="keypass" />
+        <attribute name="verbose" />
+        <sequential>
+            <exec executable="jarsigner" failonerror="true">
+                <!-- magic key -->
+                <arg line="-verbose -digestalg SHA1 -sigalg MD5withRSA" />
+                <arg line="-keystore @{keystore} -storepass @{storepass} -keypass @{keypass}" />
+                <arg line="-signedjar &quot;@{signedjar}&quot;" />
+                <arg line="&quot;@{jar}&quot; @{alias}" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="-release-sign" if="has.keystore">
+        <!-- only create apk if *not* a library project -->
+        <do-only-if-not-library elseText="Library project: do not create apk...">
+            <sequential>
+                <property name="out.unaligned.file" location="${out.absolute.dir}/${ant.project.name}-release-unaligned.apk" />
+
+                <!-- Signs the APK -->
+                <echo>Signing final apk with jdk...</echo>
+                <signjarjdk
+                    jar="${out.packaged.file}"
+                    signedjar="${out.unaligned.file}"
+                    keystore="${key.store}"
+                    storepass="${key.store.password}"
+                    alias="${key.alias}"
+                    keypass="${key.alias.password}"
+                    verbose="${verbose}" />
+
+                <!-- Zip aligns the APK -->
+                <zipalign-helper in.package="${out.unaligned.file}" out.package="${out.final.file}" />
+                <echo>Release Package: ${out.final.file}</echo>
+            </sequential>
+        </do-only-if-not-library>
+        <record-build-info />
+    </target>
+
+</project>

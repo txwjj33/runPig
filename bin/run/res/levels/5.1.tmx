@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="14" height="12" tilewidth="60" tileheight="60">
+ <tileset firstgid="1" name="1" tilewidth="60" tileheight="60">
+  <image source="../mszy/road1.png" width="89" height="81"/>
+ </tileset>
+ <tileset firstgid="2" name="stuck1" tilewidth="60" tileheight="120">
+  <image source="../mszy/stuck1.png" width="89" height="143"/>
+ </tileset>
+ <tileset firstgid="3" name="icon_diamond" tilewidth="39" tileheight="30">
+  <image source="../mszy/icon_diamond.png" width="39" height="30"/>
+ </tileset>
+ <tileset firstgid="4" name="road1" tilewidth="60" tileheight="60">
+  <image source="../mszy/road1.png" width="89" height="81"/>
+ </tileset>
+ <tileset firstgid="5" name="stuck2" tilewidth="60" tileheight="120">
+  <image source="../mszy/stuck2.png" width="89" height="143"/>
+ </tileset>
+ <tileset firstgid="6" name="icon_zhangaiwu" tilewidth="60" tileheight="60">
+  <image source="../mszy/icon_zhangaiwu.png" width="60" height="63"/>
+ </tileset>
+ <tileset firstgid="7" name="icon_zhangaiwu - 2" tilewidth="60" tileheight="60">
+  <image source="../mszy/icon_zhangaiwu - 2.png" width="60" height="63"/>
+ </tileset>
+ <layer name="road2" width="14" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgF+AALFOMCjATkRwFlAAAVYAAO
+  </data>
+ </layer>
+ <layer name="diamond" width="14" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFtALMA+0ANDDY3EMMAAAIiAAH
+  </data>
+ </layer>
+ <layer name="road1" width="14" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFIxEw4sHUNpMSAAAIoAAO
+  </data>
+ </layer>
+ <layer name="stuck1" width="14" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFQxmwQTE2cWqbORAAABgwAB8=
+  </data>
+ </layer>
+ <layer name="stuck2" width="14" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFAwHYB9oBQwQAAAq4AAg=
+  </data>
+ </layer>
+</map>
