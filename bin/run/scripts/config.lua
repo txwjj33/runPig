@@ -47,7 +47,7 @@ LEVEL_NUM_CONF =
 LEVEL_RECYCLE_MIN = 7
 LEVEL_RECYCLE_MAX = 9
 
-checkMap = true
+checkMap = false
 if checkMap then
     for k, v in ipairs(LEVEL_NUM_CONF) do
         for i = 1, v do

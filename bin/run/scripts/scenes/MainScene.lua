@@ -82,19 +82,22 @@ function MainScene:ctor()
 end
 
 function MainScene:addNewMap(posX, bodys, diamondTable)
-    currentLevel = currentLevel + 1
-    local levelID = nil
-    if currentLevel <= LEVEL_RECYCLE_MIN then
-        levelID = currentLevel
-    else
-        levelID = math.random(LEVEL_RECYCLE_MIN, LEVEL_RECYCLE_MAX)
-    end
+ --   currentLevel = currentLevel + 1
+ --   local levelID = nil
+ --   if currentLevel <= LEVEL_RECYCLE_MIN then
+ --       levelID = currentLevel
+ --   else
+ --       levelID = math.random(LEVEL_RECYCLE_MIN, LEVEL_RECYCLE_MAX)
+ --   end
 
-    local mapID = math.random(1, LEVEL_NUM_CONF[levelID])
-    local mapPath = string.format("levels/%d.%d.tmx", levelID, mapID)
-	print("create new map: " .. mapPath)
-    
+ --   local mapID = math.random(1, LEVEL_NUM_CONF[levelID])
+ --   local mapPath = string.format("levels/%d.%d.tmx", levelID, mapID)
+	--print("create new map: " .. mapPath)
+
+    mapPath = "0.1.tmx"
+    print("create new map: " .. mapPath)
 	local map = CCTMXTiledMap:create(mapPath)
+    print("create new map: " .. mapPath)
 	map:setPosition(posX, 0)
     self:addChild(map)
 

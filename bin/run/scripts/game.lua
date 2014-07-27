@@ -7,15 +7,9 @@ require("framework.init")
 game = {}
 
 function game.startup()
-    display.addSpriteFramesWithFile(GAME_TEXTURE_DATA_FILENAME, GAME_TEXTURE_IMAGE_FILENAME)
-
-    game.enterMainScene()
+    display.replaceScene(require("scenes.MainScene").new(), "fade", 0.6, display.COLOR_WHITE)
 end
 
 function game.exit()
     os.exit()
-end
-
-function game.enterMainScene()
-    display.replaceScene(require("scenes.MainScene").new(), "fade", 0.6, display.COLOR_WHITE)
 end
