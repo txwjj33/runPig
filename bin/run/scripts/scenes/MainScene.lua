@@ -22,6 +22,8 @@ local score = 0
 --钻石shape与
 local diamondTable = {}
 
+local roleHeight = 0
+
 local MAP_ITEMS = 
 {
      road1 = COLLISION_TYPE_ROAD,
@@ -45,21 +47,25 @@ end
 function MainScene:ctor()
     self.collisionRoadCount = 0
 
+    self.shapes = {}
+
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
     local startPos = 0
-	self.m_pOldMapBody = {}
-    self.m_pOldDiamonds = {}
-	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody, self.m_pOldDiamonds)
+	self.m_pOldMapBody = self:addMapBody(0)
+    self.m_pOldDiamonds = {}  --记录钻石的shape，碰撞时删除
+    self.m_pOldRoadPosY = {}  --记录道路的y坐标，重定位角色
+	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody, self.m_pOldDiamonds, self.m_pOldRoadPosY)
 
 	local oldMapWidth = self.m_pOldMap:getContentSize().width + startPos
 	print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
-	self.m_pNewMapBody = {}
+	self.m_pNewMapBody = self:addMapBody(oldMapWidth)
     self.m_pNewDiamonds = {}
-	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody, self.m_pNewDiamonds)
+    self.m_pNewRoadPosY = {}
+	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody, self.m_pNewDiamonds, self.m_pNewRoadPosY)
 
-	--self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
+	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
 	self:addBottomLineShape()
 
     for k, v in pairs(MAP_ITEMS) do
@@ -81,7 +87,7 @@ function MainScene:ctor()
     end)
 end
 
-function MainScene:addNewMap(posX, bodys, diamondTable)
+function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
     currentLevel = currentLevel + 1
     local levelID = nil
     if currentLevel <= LEVEL_RECYCLE_MIN then
@@ -98,21 +104,13 @@ function MainScene:addNewMap(posX, bodys, diamondTable)
 	map:setPosition(posX, 0)
     self:addChild(map)
 
-    local function getBody(collitionType)
-        if bodys[collitionType] then 
-            return bodys[collitionType]
-        else
-            local body = self:addMapBody(posX)
-            body:bind(map)
-            bodys[collitionType] = body
-            return body
-        end
-    end
+    body:bind(map)
 
     --添加road对应的形状
     local function addRoadShape(collitionType, pos1, pos2)
-        local shape = getBody(collitionType):addSegmentShape(pos1, pos2, 1)
+        local shape = body:addSegmentShape(pos1, pos2, 1)
         shape:setCollisionType(collitionType)
+        return shape
     end
 
 	for layerName, v in pairs(MAP_ITEMS) do
@@ -148,11 +146,12 @@ function MainScene:addNewMap(posX, bodys, diamondTable)
 
                             checkLeftRoad()
                         elseif v == COLLISION_TYPE_ROAD then
-                            addRoadShape(COLLISION_TYPE_ROAD,
+                            local shape = addRoadShape(COLLISION_TYPE_ROAD,
 								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
 								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 
                             checkLeftRoad()
+                            roadPosYTable[shape] = pos.y + tileSize.height / 2
                         else
                             local vertexes = CCPointArray:create(4)
 					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
@@ -160,7 +159,7 @@ function MainScene:addNewMap(posX, bodys, diamondTable)
 					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
-					        local shape = getBody(v):addPolygonShape(vertexes)
+					        local shape = body:addPolygonShape(vertexes)
                             shape:setCollisionType(v)
 
                             if v == COLLISION_TYPE_DIAMOND then
@@ -197,21 +196,21 @@ function MainScene:removeOldMapAddNewMap()
 
 	--移除旧地图
 	self.m_pOldMap:removeFromParent()
-    for _, v in pairs(self.m_pOldMapBody) do
-        v:removeSelf()
-    end
+    self.m_pOldMapBody:removeSelf()
 
 	--将之前的新地图赋值给旧地图
 	self.m_pOldMap = self.m_pNewMap
 	self.m_pOldMapBody = self.m_pNewMapBody
     self.m_pOldDiamonds = self.m_pNewDiamonds
+    self.m_pOldRoadPosY = self.m_pNewRoadPosY
 
 	--创建新地图
     local odMapPosX = self.m_pOldMap:getPosition()
 	local newMapPosX = odMapPosX + self.m_pOldMap:getContentSize().width
-	self.m_pNewMapBody = {}
+	self.m_pNewMapBody = self:addMapBody(newMapPosX)
     self.m_pNewDiamonds = {}
-	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody, self.m_pNewDiamonds)
+    self.m_pNewRoadPosY = {}
+	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody, self.m_pNewDiamonds, self.m_pNewRoadPosY)
 
 	print("end create new map")
 end
@@ -235,6 +234,7 @@ function MainScene:createRole(pos)
     self:addChild(role)
 
 	local roleSize = role:getContentSize()
+    roleHeight = roleSize.height
 	local rolePos = ccpAdd(tilePos, ccp(roleSize.width / 2, roleSize.height / 2))
 
 	local vexArray = CCPointArray:create(4)
@@ -244,8 +244,6 @@ function MainScene:createRole(pos)
 	vexArray:add(ccp(  roleSize.width / 2, - roleSize.height / 2))
 
 	local roleBody = self.world:createPolygonBody(1, vexArray)
-    roleBody:setFriction(0)
-    roleBody:setElasticity(1)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
     roleBody:bind(role)
@@ -266,44 +264,8 @@ function MainScene:onCollisionListener(phase, event)
     if phase == "begin" then
         return self:onCollisionBegin(event)
     elseif phase == "preSolve" then
-        --local body1 = event:getBody1()   --地图body
-        --local body2 = event:getBody2()   --地图body
-        --local x1, y1 = body1:getPosition()
-        --local x2, y2 = body2:getPosition()
-        --self.body1PrePos = ccp(body1:getPosition())
-        --self.body2PrePos = ccp(body2:getPosition())
-        ----event:setSurfaceVelocities(0, 0)
-        --local collisionType = body2:getCollisionType()
-        --if (collisionType == COLLISION_TYPE_ROAD) then
-            --body1:setVelocity(ccp(0, 0))
-            --body1:setForce(ccp(0, -GRAVITY))
-        --end
         return false
     elseif phase == "postSolve" then
-     --   local body1 = event:getBody1()   --地图body
-     --   local body2 = event:getBody2()   --地图body
-     --   local x1, y1 = body1:getPosition()
-     --   local x2, y2 = body2:getPosition()
-     --   --body1:setPosition(self.body1PrePos)
-     --   --body2:setPosition(self.body2PrePos)
-     --   local collisionType = body2:getCollisionType()
-	    --print("begin collision collision_type: " .. collisionType)
-	    --if (collisionType == COLLISION_TYPE_ROAD) then
-		   -- --self.collisionRoadCount = self.collisionRoadCount + 1
-		   -- ----给role一个力抵消重力
-     -- --      body1:setForce(ccp(0, -GRAVITY))
-     -- --      body1:setVelocity(ccp(0, 0))
-     --   --elseif (collisionType == COLLISION_TYPE_ITEM1) then
-     --   --    self:gameOver()
-     --   --elseif (collisionType == COLLISION_TYPE_BOTTOM_LINE) then
-     --   --    self:gameOver()
-     --   --elseif (collisionType == COLLISION_TYPE_ROAD_LEFT) then
-     --   --    self:gameOver()
-     --   elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
-     --       local vx, vy = body1:getVelocity()
-     --       print(vx .. vy)
-     --       --body1:setVelocity(vx, -vy)
-     --   end
         return false
     elseif phase == "separate" then
         return self:onSeparate(event)
@@ -313,7 +275,10 @@ end
 function MainScene:onCollisionBegin(event)
     local body1 = event:getBody1()   --角色body
     local body2 = event:getBody2()   --地图body
-    local collisionType = body2:getCollisionType()
+
+    local shape1 = event:getShape1()   --角色shape
+    local shape2 = event:getShape2()   --地图shape
+    local collisionType = shape2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount + 1
@@ -321,10 +286,14 @@ function MainScene:onCollisionBegin(event)
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
 
-        --local oldBodyPosX, posY = self.m_pOldMapBody[COLLISION_TYPE_ROAD]:getPosition()
-        --print("oldBody posX, posY" .. oldBodyPosX .. "  " .. posY)
-
-        local shape2 = event:getShape2()
+        local roadPosY = 0
+        if self.m_pOldRoadPosY[shape2] then
+            roadPosY = self.m_pOldRoadPosY[shape2]
+        else
+            roadPosY = self.m_pNewRoadPosY[shape2]
+        end
+        local x, y = body1:getPosition()
+        body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
     elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
         local vx, vy = body1:getVelocity()
         print(vx .. vy)
@@ -333,7 +302,6 @@ function MainScene:onCollisionBegin(event)
         end
     elseif (collisionType == COLLISION_TYPE_DIAMOND) then
         score = score + DIAMOND_SCORE
-        local shape2 = event:getShape2()
         if self.m_pOldDiamonds[shape2] then
             self.m_pOldDiamonds[shape2]:removeFromParent()
             body2:removeShape(shape2)
@@ -347,17 +315,17 @@ function MainScene:onCollisionBegin(event)
         self:gameOver()
     end
 
-	--每次碰撞以后强制设置速度
-	--body2:setVelocity(ccp(-MAP_MOVE_SPEED, 0))
-
     return false
 end
 
 function MainScene:onSeparate(event)
-    local body1 = event:getBody1()   --地图body
+    local body1 = event:getBody1()   --角色body
     local body2 = event:getBody2()   --地图body
 
-    local collisionType = body2:getCollisionType()
+    local shape1 = event:getShape1()   --角色shape
+    local shape2 = event:getShape2()   --地图shape
+
+    local collisionType = shape2:getCollisionType()
 	--print("onSeparate collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
