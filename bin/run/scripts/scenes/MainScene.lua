@@ -59,7 +59,7 @@ function MainScene:ctor()
     self.m_pNewDiamonds = {}
 	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody, self.m_pNewDiamonds)
 
-	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
+	--self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
 	self:addBottomLineShape()
 
     for k, v in pairs(MAP_ITEMS) do
@@ -82,22 +82,19 @@ function MainScene:ctor()
 end
 
 function MainScene:addNewMap(posX, bodys, diamondTable)
- --   currentLevel = currentLevel + 1
- --   local levelID = nil
- --   if currentLevel <= LEVEL_RECYCLE_MIN then
- --       levelID = currentLevel
- --   else
- --       levelID = math.random(LEVEL_RECYCLE_MIN, LEVEL_RECYCLE_MAX)
- --   end
+    currentLevel = currentLevel + 1
+    local levelID = nil
+    if currentLevel <= LEVEL_RECYCLE_MIN then
+        levelID = currentLevel
+    else
+        levelID = math.random(LEVEL_RECYCLE_MIN, LEVEL_RECYCLE_MAX)
+    end
 
- --   local mapID = math.random(1, LEVEL_NUM_CONF[levelID])
- --   local mapPath = string.format("levels/%d.%d.tmx", levelID, mapID)
-	--print("create new map: " .. mapPath)
+    local mapID = math.random(1, LEVEL_NUM_CONF[levelID])
+    local mapPath = string.format("levels/%d.%d.tmx", levelID, mapID)
+	print("create new map: " .. mapPath)
 
-    mapPath = "0.1.tmx"
-    print("create new map: " .. mapPath)
 	local map = CCTMXTiledMap:create(mapPath)
-    print("create new map: " .. mapPath)
 	map:setPosition(posX, 0)
     self:addChild(map)
 
@@ -314,7 +311,7 @@ function MainScene:onCollisionListener(phase, event)
 end
 
 function MainScene:onCollisionBegin(event)
-    local body1 = event:getBody1()   --地图body
+    local body1 = event:getBody1()   --角色body
     local body2 = event:getBody2()   --地图body
     local collisionType = body2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
@@ -323,6 +320,11 @@ function MainScene:onCollisionBegin(event)
 		--给role一个力抵消重力
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
+
+        --local oldBodyPosX, posY = self.m_pOldMapBody[COLLISION_TYPE_ROAD]:getPosition()
+        --print("oldBody posX, posY" .. oldBodyPosX .. "  " .. posY)
+
+        local shape2 = event:getShape2()
     elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
         local vx, vy = body1:getVelocity()
         print(vx .. vy)
@@ -348,7 +350,7 @@ function MainScene:onCollisionBegin(event)
 	--每次碰撞以后强制设置速度
 	--body2:setVelocity(ccp(-MAP_MOVE_SPEED, 0))
 
-    return true
+    return false
 end
 
 function MainScene:onSeparate(event)

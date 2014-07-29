@@ -20,7 +20,7 @@ ROLE_JUMP_SPEED = 500
 GRAVITY = -800
 
 ROLE_POS_X = 5
-ROLE_POS_Y = 5
+ROLE_POS_Y = 3
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
@@ -47,7 +47,7 @@ LEVEL_NUM_CONF =
 LEVEL_RECYCLE_MIN = 7
 LEVEL_RECYCLE_MAX = 9
 
-checkMap = false
+checkMap = true
 if checkMap then
     for k, v in ipairs(LEVEL_NUM_CONF) do
         for i = 1, v do
