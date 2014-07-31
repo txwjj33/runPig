@@ -78,7 +78,7 @@ end
 --LOAD_SHORTCODES_API = true
 
 ---- screen orientation
---CONFIG_SCREEN_ORIENTATION = "portrait"
+--CONFIG_SCREEN_ORIENTATION = "sensorLandscape"
 
 ---- design resolution
 --CONFIG_SCREEN_WIDTH  = 640

@@ -1,4 +1,5 @@
 local scheduler = require("framework.scheduler")
+local scheduler = require("framework.luaj")
 
 local MainScene = class("MainScene", function()
     return display.newScene("MainScene")
@@ -84,6 +85,7 @@ function MainScene:ctor()
         if (self.collisionRoadCount > 0) then
             self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
         end
+        luaj.callStaticMethod("com/xwtan/run/Run", "onScreenADClick")
     end)
 end
 
@@ -312,7 +314,7 @@ function MainScene:onCollisionBegin(event)
             print("remove diamond")
         end
     else
-        self:gameOver()
+        --self:gameOver()
     end
 
     return false
@@ -343,6 +345,8 @@ function MainScene:gameOver()
     self.world:stop()
 	self.roleBody:setVelocity(ccp(0, 0))
 	print("you lose!")
+
+    luaj.callStaticMethod("com/xwtan/run/Run", "onScreenADClick")
 end
 
 function MainScene:onEnter()
