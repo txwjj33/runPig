@@ -1,10 +1,12 @@
 local scheduler = require("framework.scheduler")
-local scheduler = require("framework.luaj")
+--local scheduler = require("framework.luaj")
+--local UIImage = require("framework.ui.UIImage")
 
 local MainScene = class("MainScene", function()
     return display.newScene("MainScene")
 end)
 
+COLLISION_TYPE_ROLE_LINE = -1
 COLLISION_TYPE_BOTTOM_LINE = 0   --下面的线用来判定玩家死亡
 COLLISION_TYPE_ROLE        = 1
 COLLISION_TYPE_ROAD        = 2
@@ -16,11 +18,21 @@ COLLISION_TYPE_STUCK2 = 11
 COLLISION_TYPE_STUCK3 = 12
 COLLISION_TYPE_STUCK4 = 13
 
+local STRING_MAX_SCORE = "MAX_SCORE"
+local STRING_MUSIC = "MUSIC"
+
 MAP_COUNT = 1
+local rolePosX = 0
+local sYunWidth = 0
+
+local font = "AGENTORANGE.ttf"
 
 local currentLevel = -1
 local score = 0
---钻石shape与
+local diamondScore = 0
+local maxScore = 0
+local yunCount = 0
+--钻石shape表
 local diamondTable = {}
 
 local roleHeight = 0
@@ -39,19 +51,26 @@ local MAP_ITEMS =
 function restartGame()
     currentLevel = -1
     score = 0
+    yunCount = 0
 end
 
-function MainScene:addCollisionScriptListener(collitionType)
-    self.world:addCollisionScriptListener(handler(self, self.onCollisionListener), COLLISION_TYPE_ROLE, collitionType)
+function MainScene:addCollisionToRoleScriptListener(collisionType)
+    self:addCollisionScriptListener(COLLISION_TYPE_ROLE, collisionType)
+end
+
+function MainScene:addCollisionScriptListener(type1, type2)
+    self.world:addCollisionScriptListener(handler(self, self.onCollisionListener), type1, type2)
 end
 
 function MainScene:ctor()
     self.collisionRoadCount = 0
-
     self.shapes = {}
 
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
+
+    self:initUI()
+    self:addLabel()
 
     local startPos = 0
 	self.m_pOldMapBody = self:addMapBody(0)
@@ -68,15 +87,16 @@ function MainScene:ctor()
 
 	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
 	self:addBottomLineShape()
+	self:addRoleLineShape()   --添加角色所在位置的竖线，用于检测跳过的障碍数
 
     for k, v in pairs(MAP_ITEMS) do
-        self:addCollisionScriptListener(v)
+        self:addCollisionToRoleScriptListener(v)
     end
-    self:addCollisionScriptListener(COLLISION_TYPE_ROAD_LEFT)
+    self:addCollisionToRoleScriptListener(COLLISION_TYPE_ROAD_LEFT)
 
     -- add debug node
-    self.worldDebug = self.world:createDebugNode()
-    self:addChild(self.worldDebug)
+    --self.worldDebug = self.world:createDebugNode()
+    --self:addChild(self.worldDebug)
 
     local baseLayer = display.newLayer()
 	baseLayer:setTouchEnabled(true)
@@ -85,8 +105,91 @@ function MainScene:ctor()
         if (self.collisionRoadCount > 0) then
             self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
         end
-        luaj.callStaticMethod("com/xwtan/run/Run", "onScreenADClick")
     end)
+end
+
+function MainScene:initUI()
+    cc.ui.UIImage.new("interface_background.png")
+        :align(display.LEFT_BOTTOM)
+        :addTo(self)
+    self:addYun()
+    self:addSun()
+    --self:addButtons()
+end
+
+function MainScene:addYun()
+    self.yunBody = self:addMapBody(0)
+    self.yunNode = display.newNode()
+    self:addChild(self.yunNode)
+    self.yunBody:bind(self.yunNode)
+
+    self.yunsTable = {}
+    self.yunBatchNode = CCSpriteBatchNode:create("interface_yun_02.png", 100)
+        :addTo(self.yunNode)
+    sYunWidth = self.yunBatchNode:getTexture():getContentSize().width
+    local yunCount = math.floor(CONFIG_SCREEN_WIDTH / sYunWidth) + 2
+    local posX = 0
+
+    for k = 1, yunCount do
+        self:addAYun(posX)
+        posX = posX + sYunWidth
+    end
+end
+
+function MainScene:addAYun(posX)
+    local yun = cc.ui.UIImage.new(self.yunBatchNode:getTexture())
+        :align(display.LEFT_BOTTOM, posX, 0)
+        :addTo(self.yunNode)
+
+    local randPosX = math.random(1, sYunWidth)
+    local randPosY = math.random(1, 30)
+    cc.ui.UIImage.new("interface_hua.png")
+        :align(display.LEFT_BOTTOM, randPosX, -randPosY)
+        :addTo(yun)
+
+    table.insert(self.yunsTable, yun)
+end
+
+function MainScene:addSun()
+end
+
+function MainScene:addLabel()
+    local height = 685
+    local fontSize = 40
+
+    self.scoreLabel = CCLabelTTF:create("0", font, fontSize)
+    self.scoreLabel:setColor(ccc3(255,254,219))
+    self.scoreLabel:setPosition(CONFIG_SCREEN_WIDTH / 2, height)
+    self:addChild(self.scoreLabel)
+
+    maxScore = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_MAX_SCORE, 0)
+    self.maxScoreLabel = CCLabelTTF:create(maxScore, font, fontSize)
+    self.maxScoreLabel:setColor(ccc3(255,232,111))
+    self.maxScoreLabel:setPosition(1177, height)
+    self.maxScoreLabel:setAnchorPoint(ccp(0, 0.5))
+    self:addChild(self.maxScoreLabel)
+
+    local bestLabel = CCLabelTTF:create("Best", font, fontSize)
+    bestLabel:setColor(ccc3(255,232,111))
+    bestLabel:setPosition(1019, height)
+    bestLabel:setAnchorPoint(ccp(0, 0.5))
+    self:addChild(bestLabel)
+end
+
+function MainScene:addButtons()
+    cc.ui.UIPushButton.new("button_try-again_02.png")
+        :onButtonPressed(function(event)
+            event.target:setScale(1.2)
+        end)
+        :onButtonRelease(function(event)
+            event.target:setScale(1.0)
+        end)
+        :onButtonClicked(function(event)
+            package.loaded["scenes.MainScene"] = nil
+            display.replaceScene(require("scenes.MainScene").new())
+        end)
+        :align(display.CENTER, WIN_WIDTH / 2, WIN_HEIGHT / 2)
+        :addTo(self)
 end
 
 function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
@@ -109,9 +212,9 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
     body:bind(map)
 
     --添加road对应的形状
-    local function addRoadShape(collitionType, pos1, pos2)
+    local function addRoadShape(collisionType, pos1, pos2)
         local shape = body:addSegmentShape(pos1, pos2, 1)
-        shape:setCollisionType(collitionType)
+        shape:setCollisionType(collisionType)
         return shape
     end
 
@@ -178,18 +281,15 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
 end
 
 function MainScene:update(dt)
-    --print("dt" .. dt)
-    --self.m_pOldMapBody:setPosition(self.m_pOldMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
-    --self.m_pNewMapBody:setPosition(self.m_pNewMapBody:getPositionX() - MAP_MOVE_SPEED * dt, 0)
-     --print("dt" .. dt .. "end")
-    --self.m_pOldMapBody:setPosition(ccpSub(ccp(self.m_pOldMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
-    --self.m_pNewMapBody:setPosition(ccpSub(ccp(self.m_pNewMapBody:getPosition()), ccpMult(ccp(MAP_MOVE_SPEED, 0), dt)))
-    --body->p = cpvadd(body->p, cpvmult(cpv(-MAP_MOVE_SPEED, 0), dt));
 	local oldMapWidth = self.m_pOldMap:getContentSize().width
 	local oldBodyPos = self.m_pOldMap:getPosition()
 	--地图已出界，删除旧地图，添加新地图
 	if (oldBodyPos <= - oldMapWidth) then
 		self:removeOldMapAddNewMap()
+    end
+
+    if (self.yunNode:getPositionX() < - sYunWidth * (yunCount + 1)) then
+        self:removeOldYun()
     end
 end
 
@@ -217,6 +317,18 @@ function MainScene:removeOldMapAddNewMap()
 	print("end create new map")
 end
 
+function MainScene:removeOldYun()
+    yunCount = yunCount + 1
+
+    local yun = self.yunsTable[1]
+    yun:removeFromParentAndCleanup(true)
+    table.remove(self.yunsTable, 1)
+
+    local lastYun = self.yunsTable[#self.yunsTable]
+    local pos = lastYun:getPositionX() + sYunWidth
+    self:addAYun(pos)
+end
+
 function MainScene:addMapBody(posX)
 	local body = CCPhysicsBody:create(self.world, 1, 1)
     self.world:addBody(body)
@@ -231,9 +343,12 @@ end
 function MainScene:createRole(pos)
 	local layer = self.m_pOldMap:layerNamed("road1")
 	local tilePos = layer:positionAt(pos)
+    rolePosX = tilePos.x
 
-	local role = display.newSprite("grossini.png")
+	local role = display.newSprite("zhuti_zhu.png")
     self:addChild(role)
+
+    local pig = CCSkeletonAnimation:create("spineboy.json", "spineboy.atlas")
 
 	local roleSize = role:getContentSize()
     roleHeight = roleSize.height
@@ -255,11 +370,24 @@ end
 
 function MainScene:addBottomLineShape()
     local bottomWallBody = self.world:createBoxBody(0, WIN_WIDTH, 1)
-    --bottomWallBody:setFriction(0)
-    --bottomWallBody:setElasticity(0)
     bottomWallBody:setPosition(0, 0)
     bottomWallBody:setCollisionType(COLLISION_TYPE_BOTTOM_LINE)
-    self:addCollisionScriptListener(COLLISION_TYPE_BOTTOM_LINE)
+    self:addCollisionToRoleScriptListener(COLLISION_TYPE_BOTTOM_LINE)
+end
+
+function MainScene:addRoleLineShape()
+    local roleWallBody = self.world:createBoxBody(0, 1, WIN_HEIGHT)
+    roleWallBody:setPosition(rolePosX - 2, WIN_HEIGHT / 2)
+    roleWallBody:setCollisionType(COLLISION_TYPE_ROLE_LINE)
+
+    for k, v in pairs(MAP_ITEMS) do
+        self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, v)
+    end
+    self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_ROAD_LEFT)
+    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK1)
+    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK2)
+    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK3)
+    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK4)
 end
 
 function MainScene:onCollisionListener(phase, event)
@@ -280,6 +408,20 @@ function MainScene:onCollisionBegin(event)
 
     local shape1 = event:getShape1()   --角色shape
     local shape2 = event:getShape2()   --地图shape
+    if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
+        local collisionType = shape2:getCollisionType()
+        if collisionType == COLLISION_TYPE_STUCK1 
+            or collisionType == COLLISION_TYPE_STUCK2
+            or collisionType == COLLISION_TYPE_STUCK3
+            or collisionType == COLLISION_TYPE_STUCK4
+            then
+            score  = score + 1
+            self.scoreLabel:setString(score)
+        end
+
+        return false
+    end
+
     local collisionType = shape2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
@@ -303,7 +445,7 @@ function MainScene:onCollisionBegin(event)
             body1:setVelocity(vx, -vy)
         end
     elseif (collisionType == COLLISION_TYPE_DIAMOND) then
-        score = score + DIAMOND_SCORE
+        diamondScore = diamondScore + DIAMOND_SCORE
         if self.m_pOldDiamonds[shape2] then
             self.m_pOldDiamonds[shape2]:removeFromParent()
             body2:removeShape(shape2)
@@ -314,7 +456,7 @@ function MainScene:onCollisionBegin(event)
             print("remove diamond")
         end
     else
-        --self:gameOver()
+        self:gameOver()
     end
 
     return false
@@ -327,9 +469,13 @@ function MainScene:onSeparate(event)
     local shape1 = event:getShape1()   --角色shape
     local shape2 = event:getShape2()   --地图shape
 
-    local collisionType = shape2:getCollisionType()
+    if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
+        return false
+    end
+
+    --local collisionType = event:getShape2():getCollisionType()
 	--print("onSeparate collision_type: " .. collisionType)
-	if (collisionType == COLLISION_TYPE_ROAD) then
+	if shape2 and (event:getShape2():getCollisionType() == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
 		
 		--离开所有的道路，恢复重力效果
@@ -343,16 +489,24 @@ end
 
 function MainScene:gameOver()
     self.world:stop()
-	self.roleBody:setVelocity(ccp(0, 0))
+	--self.roleBody:setVelocity(ccp(0, 0))
 	print("you lose!")
+    scheduler.unscheduleGlobal(self.updateSchedule)
 
-    luaj.callStaticMethod("com/xwtan/run/Run", "onScreenADClick")
+    if score > maxScore then
+        maxScore = score
+        self.maxScoreLabel:setString(maxScore)
+        CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_MAX_SCORE, maxScore)
+    end
+
+    self:addButtons()
+    --luaj.callStaticMethod("com/xwtan/run/Run", "showSpotAd")
 end
 
 function MainScene:onEnter()
     self.world:start()
     
-    scheduler.scheduleUpdateGlobal(function(dt)
+    self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
         self:update(dt)
     end)
 end

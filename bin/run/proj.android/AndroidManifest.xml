@@ -67,6 +67,15 @@
 		        <data android:scheme="package" />
 		    </intent-filter>
 		</receiver>
+		<activity
+		    android:name="net.youmi.android.SmartBannerActivity"
+		    android:configChanges="keyboard|keyboardHidden|orientation"
+		    android:theme="@style/Transparent">
+		</activity>
+		<service
+		    android:name="net.youmi.android.SmartBannerService"
+		    android:exported="false">
+		</service>
 
         <!-- 酷果 需要注册的自定义receiver，MyMediaReceiver为自定义类名 -->
         <!-- 

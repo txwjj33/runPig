@@ -27,17 +27,24 @@ import org.cocos2dx.lib.Cocos2dxActivity;
 //import com.pkag.m.MyMDListner;
 //import com.pkag.m.MyMediaManager;
 
-//import android.app.Activity；
+//import android.app.Activity锟斤拷
 import net.youmi.android.AdManager;
+import net.youmi.android.banner.AdSize;
+import net.youmi.android.banner.AdView;
 import net.youmi.android.spot.SpotDialogListener;
 import net.youmi.android.spot.SpotManager;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 
 public class Run extends Cocos2dxActivity {
 	
 	static private Run sInstance;
+	
+	private static Cocos2dxActivity context;
 	
     public static Run getInstance() { return sInstance; }
 
@@ -46,10 +53,35 @@ public class Run extends Cocos2dxActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		//setContentView(R.layout.activity_ad);
 		setInstance(this);
+		Log.d("Youmi", "onCreate, show ads!");
 		
-		AdManager.getInstance(this).init("6699b8ebfd92e055", "64956e39f0ed9461", true);
-		SpotManager.getInstance(this).loadSpotAds();
+		context = (Cocos2dxActivity) Cocos2dxActivity.getContext();
+		
+//		AdManager.getInstance(this).init("6699b8ebfd92e055", "64956e39f0ed9461", true);
+//		SpotManager.getInstance(this).loadSpotAds();
+//		
+//		FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams( FrameLayout.LayoutParams.FILL_PARENT,
+//		    FrameLayout.LayoutParams.WRAP_CONTENT);
+//
+//		layoutParams.gravity = Gravity.BOTTOM | Gravity.RIGHT; // 锟斤拷锟斤拷示锟斤拷为锟斤拷锟铰斤拷
+//		AdView adView = new AdView(this, AdSize.FIT_SCREEN);
+//		this.addContentView(adView, layoutParams);
+		
+//		adView.setAdListener(new AdViewListener() {
+//		    @Override
+//		    public void onSwitchedAd(AdView adView) {
+//		    }
+//
+//		    @Override
+//		    public void onReceivedAd(AdView adView) {
+//		    }
+//
+//		    @Override
+//		    public void onFailedToReceivedAd(AdView adView) {
+//		    }
+//		});
 	}
 	
 	@Override
@@ -62,24 +94,33 @@ public class Run extends Cocos2dxActivity {
     	System.loadLibrary("game");
     }
     
-    static public void showSpotAd(){
-    	if(SpotManager.getInstance(sInstance).checkLoadComplete()){
-    		Log.d("Youmi", "checkLoadComplete, show ads!");
-    		SpotManager.getInstance(sInstance).showSpotAds(sInstance, new SpotDialogListener() {
-    		    @Override
-    		    public void onShowSuccess() {
-    		        Log.i("Youmi", "onShowSuccess");
-    		    }
 
-    		    @Override
-    		    public void onShowFailed() {
-    		        Log.i("Youmi", "onShowFailed");
-    		    }
-    		});
-    	}
-    	else{
-    		Log.d("Youmi", "checkLoadComplete failed, not show ads!");
-    	}
+    
+    public static void showSpotAd(){
+    	//if(SpotManager.getInstance(sInstance).checkLoadComplete()){
+//    		Log.d("Youmi", "checkLoadComplete, show ads!");
+//
+//    		//context.addContentView(view, params)
+//    		context.runOnUiThread(new Runnable() {
+//    	            @Override
+//    	            public void run() {
+//    	            	SpotManager.getInstance(context).showSpotAds(context, new SpotDialogListener() {
+//    	        		    @Override
+//    	        		    public void onShowSuccess() {
+//    	        		        Log.i("Youmi", "onShowSuccess");
+//    	        		    }
+//
+//    	        		    @Override
+//    	        		    public void onShowFailed() {
+//    	        		        Log.i("Youmi", "onShowFailed");
+//    	        		    }
+//    	        		});
+//    	            }
+//    	        });
+    	//}
+    	//else{
+    		//Log.d("Youmi", "checkLoadComplete failed, not show ads!");
+    	//}
     	
     }
     
@@ -87,35 +128,28 @@ public class Run extends Cocos2dxActivity {
 //    	MyMediaManager.setListner(new MyMDListner() {
 //			@Override
 //			public void onMDShow() {
-//				System.out.println("广告显示");
 //			}
 //			@Override
 //			public void onMDClose() {
-//				System.out.println("广告关闭");
+//				System.out.println("锟斤拷锟截憋拷");
 //			}
 //			@Override
 //			public void onInstanll(int id) {
-//				System.out.println("广告安装id："+id);
+//				System.out.println("锟斤拷姘沧癷d锟斤拷"+id);
 //			}
 //			@Override
 //			public void onMDLoadSuccess() {
-//				System.out.println("广告加载成功");
-//				//这里实现广告加载完成立即显示广告，更多用法可以查看开发文档的“方法调用时机”；
-//				//具体参数参考开发文档参数说明：Context context,int type
+
 //				MyMediaManager.show(Run.getInstance(),MyMediaManager.LEFT_TOP);
 //			}
 //			@Override
 //			public void onMDExitInFinish() {
-//				System.out.println("内部退出框退出按钮回调");
 //			}
 //			@Override
 //			public void onMDExitOutFinish() {
-//				System.out.println("外部退出框退出按钮回调");
 //			}
 //		});
 //		
-//		//请求广告
-//		//具体参数参考开发文档参数说明：Context context,String cooId,String channelId
 //		MyMediaManager.load(Run.getInstance(), "5b42cc6caef743e28eaf09c294e5d395", "m-appchina");
 //    }
 }
