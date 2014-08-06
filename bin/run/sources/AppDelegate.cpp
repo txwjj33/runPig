@@ -5,6 +5,7 @@
 #include "support/CCNotificationCenter.h"
 #include "CCLuaEngine.h"
 #include <string>
+#include "LuaSpine.h"
 
 using namespace std;
 using namespace cocos2d;
@@ -37,6 +38,8 @@ bool AppDelegate::applicationDidFinishLaunching()
     CCScriptEngineManager::sharedManager()->setScriptEngine(pEngine);
 
     CCLuaStack *pStack = pEngine->getLuaStack();
+	lua_State *m_state = pStack->getLuaState();
+	tolua_spine_open(m_state);
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     // load framework

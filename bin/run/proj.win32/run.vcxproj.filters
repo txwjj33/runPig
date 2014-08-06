@@ -7,6 +7,9 @@
     <Filter Include="win32">
       <UniqueIdentifier>{54d36d2c-b373-4c65-962b-76ff1fedc28b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sources\spine">
+      <UniqueIdentifier>{bb0b8ab1-ae11-4759-a5d9-dd37e142404e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -17,6 +20,21 @@
     </ClCompile>
     <ClCompile Include="app.cpp">
       <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\spine\PolygonBatch.cpp">
+      <Filter>sources\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\spine\SkeletonAnimation.cpp">
+      <Filter>sources\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\spine\SkeletonRenderer.cpp">
+      <Filter>sources\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\spine\spine-cocos2dx.cpp">
+      <Filter>sources\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\LuaSpine.cpp">
+      <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +52,21 @@
     </ClInclude>
     <ClInclude Include="app.h">
       <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\spine\PolygonBatch.h">
+      <Filter>sources\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\spine\SkeletonAnimation.h">
+      <Filter>sources\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\spine\SkeletonRenderer.h">
+      <Filter>sources\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\spine\spine-cocos2dx.h">
+      <Filter>sources\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\LuaSpine.h">
+      <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

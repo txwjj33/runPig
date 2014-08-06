@@ -25,6 +25,9 @@ MAP_COUNT = 1
 local rolePosX = 0
 local sYunWidth = 0
 
+local roleSize = 0
+local isGameOver = false
+
 local font = "AGENTORANGE.ttf"
 
 local currentLevel = -1
@@ -71,6 +74,7 @@ function MainScene:ctor()
 
     self:initUI()
     self:addLabel()
+    
 
     local startPos = 0
 	self.m_pOldMapBody = self:addMapBody(0)
@@ -104,8 +108,12 @@ function MainScene:ctor()
     baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
         if (self.collisionRoadCount > 0) then
             self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+            self.pigAnimation:setAnimation(0, "jump", true)
+            self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
+    self.pigAnimation:setContentSize(roleSize)
         end
     end)
+    self.baseLayer = baseLayer
 end
 
 function MainScene:initUI()
@@ -347,12 +355,18 @@ function MainScene:createRole(pos)
 
 	local role = display.newSprite("zhuti_zhu.png")
     self:addChild(role)
+    
+    self.pigAnimation = SkeletonAnimation:createWithFile("pig/skeleton.json", "pig/skeleton.atlas", 1)
+    self.pigAnimation:setAnimation(0, "run", true)
+    self:addChild(self.pigAnimation)
 
-    local pig = CCSkeletonAnimation:create("spineboy.json", "spineboy.atlas")
-
-	local roleSize = role:getContentSize()
+	--roleSize = role:getContentSize()
+	roleSize = self.m_pOldMap:getTileSize()
     roleHeight = roleSize.height
 	local rolePos = ccpAdd(tilePos, ccp(roleSize.width / 2, roleSize.height / 2))
+
+    self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
+    self.pigAnimation:setContentSize(roleSize)
 
 	local vexArray = CCPointArray:create(4)
 	vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 2))
@@ -363,7 +377,7 @@ function MainScene:createRole(pos)
 	local roleBody = self.world:createPolygonBody(1, vexArray)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
-    roleBody:bind(role)
+    roleBody:bind(self.pigAnimation)
 
     self.roleBody = roleBody
 end
@@ -384,10 +398,6 @@ function MainScene:addRoleLineShape()
         self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, v)
     end
     self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_ROAD_LEFT)
-    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK1)
-    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK2)
-    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK3)
-    --self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_STUCK4)
 end
 
 function MainScene:onCollisionListener(phase, event)
@@ -403,6 +413,8 @@ function MainScene:onCollisionListener(phase, event)
 end
 
 function MainScene:onCollisionBegin(event)
+    if isGameOver then return false end
+
     local body1 = event:getBody1()   --角色body
     local body2 = event:getBody2()   --地图body
 
@@ -438,6 +450,10 @@ function MainScene:onCollisionBegin(event)
         end
         local x, y = body1:getPosition()
         body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
+
+        if self.pigAnimation:isPlayAnimation("jump") then
+            self.pigAnimation:setAnimation(0, "run", true)
+        end
     elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
         local vx, vy = body1:getVelocity()
         print(vx .. vy)
@@ -463,6 +479,8 @@ function MainScene:onCollisionBegin(event)
 end
 
 function MainScene:onSeparate(event)
+    if isGameOver then return false end
+
     local body1 = event:getBody1()   --角色body
     local body2 = event:getBody2()   --地图body
 
@@ -484,14 +502,16 @@ function MainScene:onSeparate(event)
         end
     end
 
-    return true
+    return false
 end
 
 function MainScene:gameOver()
+    isGameOver = true
+
+    self.pigAnimation:setAnimation(0, "dead", true)
     self.world:stop()
-	--self.roleBody:setVelocity(ccp(0, 0))
-	print("you lose!")
     scheduler.unscheduleGlobal(self.updateSchedule)
+    self.baseLayer:removeFromParent()
 
     if score > maxScore then
         maxScore = score

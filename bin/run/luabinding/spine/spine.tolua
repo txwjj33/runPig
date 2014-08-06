@@ -1,0 +1,5 @@
+
+$#include "LuaSpine.h"
+
+$pfile "spine/SkeletonRenderer.tolua"
+$pfile "spine/SkeletonAnimation.tolua"
