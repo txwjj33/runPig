@@ -35,7 +35,9 @@ import net.youmi.android.spot.SpotDialogListener;
 import net.youmi.android.spot.SpotManager;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.FrameLayout;
@@ -94,6 +96,10 @@ public class Run extends Cocos2dxActivity {
     	System.loadLibrary("game");
     }
     
+    public static void vibrate() {
+        final Vibrator vib = (Vibrator) sInstance.getSystemService(Context.VIBRATOR_SERVICE);
+        vib.vibrate(1000);
+    }
 
     
     public static void showSpotAd(){

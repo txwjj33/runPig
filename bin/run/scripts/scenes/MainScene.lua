@@ -1,6 +1,7 @@
 local scheduler = require("framework.scheduler")
---local scheduler = require("framework.luaj")
---local UIImage = require("framework.ui.UIImage")
+if ANDOIRD then
+    local scheduler = require("framework.luaj")
+end
 
 local MainScene = class("MainScene", function()
     return display.newScene("MainScene")
@@ -35,6 +36,7 @@ local score = 0
 local diamondScore = 0
 local maxScore = 0
 local yunCount = 0
+local caodiCount = 0
 --×êÊ¯shape±í
 local diamondTable = {}
 
@@ -109,8 +111,6 @@ function MainScene:ctor()
         if (self.collisionRoadCount > 0) then
             self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
             self.pigAnimation:setAnimation(0, "jump", true)
-            self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
-    self.pigAnimation:setContentSize(roleSize)
         end
     end)
     self.baseLayer = baseLayer
@@ -122,7 +122,32 @@ function MainScene:initUI()
         :addTo(self)
     self:addYun()
     self:addSun()
+    self:addCaodi()
+    
     --self:addButtons()
+end
+
+function MainScene:addCaodi()
+    self.caodiBody = self:addMapBody(0)
+    self.caodiNode = display.newNode()
+    self:addChild(self.caodiNode)
+    self.caodiBody:bind(self.caodiNode)
+
+    self.caodiTable = {}
+    --self.caodiBatchNode = CCSpriteBatchNode:create("interface_caodi.png", 50)
+    --    :addTo(self.caodiNode)
+
+    local caodi = cc.ui.UIImage.new("interface_caodi.png")
+        :align(display.LEFT_BOTTOM, 0, 0)
+        :addTo(self.caodiNode)
+
+    table.insert(self.caodiTable, caodi)
+
+    local caodi2 = cc.ui.UIImage.new("interface_caodi.png")
+        :align(display.LEFT_BOTTOM, WIN_WIDTH, 0)
+        :addTo(self.caodiNode)
+
+    table.insert(self.caodiTable, caodi2)
 end
 
 function MainScene:addYun()
@@ -140,19 +165,19 @@ function MainScene:addYun()
 
     for k = 1, yunCount do
         self:addAYun(posX)
-        posX = posX + sYunWidth
+        posX = posX + sYunWidth - 3
     end
 end
 
 function MainScene:addAYun(posX)
     local yun = cc.ui.UIImage.new(self.yunBatchNode:getTexture())
-        :align(display.LEFT_BOTTOM, posX, 0)
+        :align(display.LEFT_BOTTOM, posX, 39)
         :addTo(self.yunNode)
 
-    local randPosX = math.random(1, sYunWidth)
-    local randPosY = math.random(1, 30)
+    local randPosX = math.random(8, sYunWidth - 8)
+    local randPosY = math.random(-8, 7)
     cc.ui.UIImage.new("interface_hua.png")
-        :align(display.LEFT_BOTTOM, randPosX, -randPosY)
+        :align(display.LEFT_BOTTOM, randPosX, randPosY)
         :addTo(yun)
 
     table.insert(self.yunsTable, yun)
@@ -299,6 +324,10 @@ function MainScene:update(dt)
     if (self.yunNode:getPositionX() < - sYunWidth * (yunCount + 1)) then
         self:removeOldYun()
     end
+
+    if (self.caodiNode:getPositionX() < - WIN_WIDTH * (caodiCount + 1)) then
+        self:removeOldCaodi()
+    end
 end
 
 function MainScene:removeOldMapAddNewMap()
@@ -325,6 +354,23 @@ function MainScene:removeOldMapAddNewMap()
 	print("end create new map")
 end
 
+function MainScene:removeOldCaodi()
+    caodiCount = caodiCount + 1
+
+    local caodi = self.caodiTable[1]
+    caodi:removeFromParentAndCleanup(true)
+    table.remove(self.caodiTable, 1)
+
+    local lastCaodi = self.caodiTable[#self.caodiTable]
+    local pos = lastCaodi:getPositionX() + WIN_WIDTH - 3
+
+    local caodi2 = cc.ui.UIImage.new("interface_caodi.png")
+        :align(display.LEFT_BOTTOM, pos, 0)
+        :addTo(self.caodiNode)
+
+    table.insert(self.caodiTable, caodi2)
+end
+
 function MainScene:removeOldYun()
     yunCount = yunCount + 1
 
@@ -333,7 +379,7 @@ function MainScene:removeOldYun()
     table.remove(self.yunsTable, 1)
 
     local lastYun = self.yunsTable[#self.yunsTable]
-    local pos = lastYun:getPositionX() + sYunWidth
+    local pos = lastYun:getPositionX() + sYunWidth - 3
     self:addAYun(pos)
 end
 
@@ -520,7 +566,10 @@ function MainScene:gameOver()
     end
 
     self:addButtons()
-    --luaj.callStaticMethod("com/xwtan/run/Run", "showSpotAd")
+    if ANDOIRD then
+        luaj.callStaticMethod("com/xwtan/run/Run", "showSpotAd")
+        luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
+    end
 end
 
 function MainScene:onEnter()

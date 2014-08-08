@@ -3,6 +3,8 @@
 DEBUG = 1
 DEBUG_FPS = true
 
+ANDOIRD = false
+
 math.randomseed(os.time())
 
 -- design resolution

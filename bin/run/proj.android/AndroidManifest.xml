@@ -14,6 +14,7 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- 酷果需要注册的权限 -->
     <!-- 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -23,6 +24,7 @@
 	<uses-permission android:name="android.permission.GET_TASKS" />
 	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	
      -->
     <!-- 有米广告 --> 
     <uses-permission android:name="android.permission.INTERNET" />
