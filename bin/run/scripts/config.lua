@@ -5,6 +5,9 @@ DEBUG_FPS = true
 
 ANDOIRD = false
 
+--开启碰撞检测区域显示
+DEBUG_COLLSION = true
+
 math.randomseed(os.time())
 
 -- design resolution
@@ -17,9 +20,9 @@ CONFIG_SCREEN_AUTOSCALE = kResolutionExactFit
 GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
-MAP_MOVE_SPEED = 200
+MAP_MOVE_SPEED = 0
 ROLE_JUMP_SPEED = 500
-GRAVITY = -800
+GRAVITY = 0
 
 ROLE_POS_X = 5
 ROLE_POS_Y = 0
@@ -33,23 +36,22 @@ DIAMOND_SCORE = 100
 LEVEL_NUM_CONF = 
 {
     [0] = 1,
-    [1] = 6,
-    [2] = 4,
-    [3] = 3,
-    [4] = 2,
-    [5] = 2,
-    [6] = 2,
-    [7] = 2,
-    [8] = 1,
-    [8] = 1,
-    [9] = 1,
+    [1] = 11,
+    [2] = 11,
+    [3] = 8,
+    [4] = 6,
+    [5] = 4,
+    [6] = 3,
+    [7] = 3,
+    [8] = 2,
+    [9] = 2,
 }
 
 --循环地图难度的最小最大值
 LEVEL_RECYCLE_MIN = 7
 LEVEL_RECYCLE_MAX = 9
 
-checkMap = true
+checkMap = false
 if checkMap then
     for k, v in ipairs(LEVEL_NUM_CONF) do
         for i = 1, v do

@@ -101,8 +101,10 @@ function MainScene:ctor()
     self:addCollisionToRoleScriptListener(COLLISION_TYPE_ROAD_LEFT)
 
     -- add debug node
-    --self.worldDebug = self.world:createDebugNode()
-    --self:addChild(self.worldDebug)
+    if DEBUG_COLLSION then
+        self.worldDebug = self.world:createDebugNode()
+        self:addChild(self.worldDebug)
+    end
 
     local baseLayer = display.newLayer()
 	baseLayer:setTouchEnabled(true)
@@ -159,7 +161,7 @@ function MainScene:addYun()
     self.yunsTable = {}
     self.yunBatchNode = CCSpriteBatchNode:create("interface_yun_02.png", 100)
         :addTo(self.yunNode)
-    sYunWidth = self.yunBatchNode:getTexture():getContentSize().width
+    sYunWidth = self.yunBatchNode:getTexture():getContentSize().width - 3
     local yunCount = math.floor(CONFIG_SCREEN_WIDTH / sYunWidth) + 2
     local posX = 0
 
@@ -245,8 +247,17 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
     body:bind(map)
 
     --添加road对应的形状
-    local function addRoadShape(collisionType, pos1, pos2)
-        local shape = body:addSegmentShape(pos1, pos2, 1)
+    --height线段的厚度
+    local function addRoadShape(collisionType, pos1, pos2, height)
+        local height_1 = height or 1
+        local shape = body:addSegmentShape(pos1, pos2, height_1)
+        shape:setCollisionType(collisionType)
+        return shape
+    end
+
+    local function addBoxRoadShape(collisionType, pos1, pos2, height)
+        local height_1 = height or 1
+        local shape = body:addSegmentShape(pos1, pos2, height_1)
         shape:setCollisionType(collisionType)
         return shape
     end
@@ -280,13 +291,13 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
 
                             addRoadShape(COLLISION_TYPE_ROAD,
 								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
 
                             checkLeftRoad()
                         elseif v == COLLISION_TYPE_ROAD then
                             local shape = addRoadShape(COLLISION_TYPE_ROAD,
 								    ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+								    ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
 
                             checkLeftRoad()
                             roadPosYTable[shape] = pos.y + tileSize.height / 2
@@ -423,6 +434,7 @@ function MainScene:createRole(pos)
 	local roleBody = self.world:createPolygonBody(1, vexArray)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
+    roleBody:setVelocity(0, -2000)
     roleBody:bind(self.pigAnimation)
 
     self.roleBody = roleBody
@@ -495,7 +507,7 @@ function MainScene:onCollisionBegin(event)
             roadPosY = self.m_pNewRoadPosY[shape2]
         end
         local x, y = body1:getPosition()
-        body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
+        --body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
 
         if self.pigAnimation:isPlayAnimation("jump") then
             self.pigAnimation:setAnimation(0, "run", true)
