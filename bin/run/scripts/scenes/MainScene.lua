@@ -28,6 +28,7 @@ local sYunWidth = 0
 
 local roleSize = 0
 local isGameOver = false
+local jumping = false
 
 local font = "AGENTORANGE.ttf"
 
@@ -71,12 +72,13 @@ function MainScene:ctor()
     self.collisionRoadCount = 0
     self.shapes = {}
 
+    self.mapBodys = {}
+
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
     self:initUI()
     self:addLabel()
-    
 
     local startPos = 0
 	self.m_pOldMapBody = self:addMapBody(0)
@@ -90,6 +92,9 @@ function MainScene:ctor()
     self.m_pNewDiamonds = {}
     self.m_pNewRoadPosY = {}
 	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody, self.m_pNewDiamonds, self.m_pNewRoadPosY)
+
+    table.insert(self.mapBodys, 1, self.m_pOldMapBody) 
+    table.insert(self.mapBodys, 2, self.m_pNewMapBody) 
 
 	self:createRole(ccp(ROLE_POS_X, ROLE_POS_Y))
 	self:addBottomLineShape()
@@ -111,11 +116,32 @@ function MainScene:ctor()
     self:addChild(baseLayer)
     baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
         if (self.collisionRoadCount > 0) then
-            self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
-            self.pigAnimation:setAnimation(0, "jump", true)
+            self:roleJump()
         end
     end)
     self.baseLayer = baseLayer
+
+    self:calSpeed()
+end
+
+function MainScene:roleJump()
+    jumping = true
+
+    ROLE_JUMP_SPEED = 200
+    self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+    self.pigAnimation:setAnimation(0, "jump", true)
+
+    local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
+    print("time: " .. time)
+    print("speed: " .. ROLE_JUMP_SPEED)
+    local posY = self.roleBody:getPositionY()
+    self.jumpSchedule = scheduler.performWithDelayGlobal(function(dt)
+        print("performWithDelayGlobal: " .. time)
+        self.roleBody:setVelocity(ccp(0, -ROLE_JUMP_SPEED))
+
+        local posY2 = self.roleBody:getPositionY()
+        print("true speed: ", (posY2 - posY) / time)
+    end, time)
 end
 
 function MainScene:initUI()
@@ -131,6 +157,7 @@ end
 
 function MainScene:addCaodi()
     self.caodiBody = self:addMapBody(0)
+    table.insert(self.mapBodys, self.caodiBody) 
     self.caodiNode = display.newNode()
     self:addChild(self.caodiNode)
     self.caodiBody:bind(self.caodiNode)
@@ -154,6 +181,7 @@ end
 
 function MainScene:addYun()
     self.yunBody = self:addMapBody(0)
+    table.insert(self.mapBodys, self.yunBody) 
     self.yunNode = display.newNode()
     self:addChild(self.yunNode)
     self.yunBody:bind(self.yunNode)
@@ -255,13 +283,6 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
         return shape
     end
 
-    local function addBoxRoadShape(collisionType, pos1, pos2, height)
-        local height_1 = height or 1
-        local shape = body:addSegmentShape(pos1, pos2, height_1)
-        shape:setCollisionType(collisionType)
-        return shape
-    end
-
 	for layerName, v in pairs(MAP_ITEMS) do
 		local layer = map:layerNamed(layerName)
         if not layer then
@@ -301,13 +322,25 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
 
                             checkLeftRoad()
                             roadPosYTable[shape] = pos.y + tileSize.height / 2
+                        elseif v == COLLISION_TYPE_STUCK1 then
+                            local vertexes = CCPointArray:create(3)
+                            vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x, pos.y + tileSize.height / 2 - STUCK_TOP_JULI))
+					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
+					        local shape = body:addPolygonShape(vertexes)
+                            shape:setCollisionType(v)
                         else
                             local vertexes = CCPointArray:create(4)
-					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
-					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
-					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
-					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
+					        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
+					        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
+					        --vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
+					        --vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
+
+                            vertexes:add(cc.p(pos.x, pos.y - tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y))
+					        vertexes:add(cc.p(pos.x, pos.y + tileSize.height / 2))
+					        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y))
 					        local shape = body:addPolygonShape(vertexes)
                             shape:setCollisionType(v)
 
@@ -353,6 +386,7 @@ function MainScene:removeOldMapAddNewMap()
 	self.m_pOldMapBody = self.m_pNewMapBody
     self.m_pOldDiamonds = self.m_pNewDiamonds
     self.m_pOldRoadPosY = self.m_pNewRoadPosY
+    self.mapBodys[1] = self.m_pOldMapBody
 
 	--创建新地图
     local odMapPosX = self.m_pOldMap:getPosition()
@@ -361,6 +395,7 @@ function MainScene:removeOldMapAddNewMap()
     self.m_pNewDiamonds = {}
     self.m_pNewRoadPosY = {}
 	self.m_pNewMap = self:addNewMap(newMapPosX, self.m_pNewMapBody, self.m_pNewDiamonds, self.m_pNewRoadPosY)
+    self.mapBodys[2] = self.m_pNewMapBody
 
 	print("end create new map")
 end
@@ -431,10 +466,21 @@ function MainScene:createRole(pos)
 	vexArray:add(ccp(  roleSize.width / 2,   roleSize.height / 2))
 	vexArray:add(ccp(  roleSize.width / 2, - roleSize.height / 2))
 
+ --   local vexArray = CCPointArray:create(8)
+ --   vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 4))
+	--vexArray:add(ccp(- roleSize.width / 2,   roleSize.height / 4))
+	--vexArray:add(ccp(- roleSize.width / 4,   roleSize.height / 2))
+	--vexArray:add(ccp(  roleSize.width / 4,   roleSize.height / 2))
+ --   vexArray:add(ccp(  roleSize.width / 2,   roleSize.height / 4))
+	--vexArray:add(ccp(  roleSize.width / 2, - roleSize.height / 4))
+	--vexArray:add(ccp(  roleSize.width / 4, - roleSize.height / 2))
+	--vexArray:add(ccp( -roleSize.width / 4, - roleSize.height / 2))
+
 	local roleBody = self.world:createPolygonBody(1, vexArray)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
-    roleBody:setVelocity(0, -2000)
+    roleBody:setVelocity(0, -MAP_MOVE_SPEED)
+    roleBody:setVelocity(0, -200)
     roleBody:bind(self.pigAnimation)
 
     self.roleBody = roleBody
@@ -495,6 +541,8 @@ function MainScene:onCollisionBegin(event)
     local collisionType = shape2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
+        jumping = false
+
 		self.collisionRoadCount = self.collisionRoadCount + 1
 		--给role一个力抵消重力
         body1:setForce(ccp(0, -GRAVITY))
@@ -507,7 +555,7 @@ function MainScene:onCollisionBegin(event)
             roadPosY = self.m_pNewRoadPosY[shape2]
         end
         local x, y = body1:getPosition()
-        --body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
+        body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
 
         if self.pigAnimation:isPlayAnimation("jump") then
             self.pigAnimation:setAnimation(0, "run", true)
@@ -557,6 +605,9 @@ function MainScene:onSeparate(event)
 		--离开所有的道路，恢复重力效果
 		if (self.collisionRoadCount == 0) then
 			body1:setForce(ccp(0, 0))
+            if not jumping then
+                body1:setVelocity(0, -ROLE_FALL_SPEED)
+            end
         end
     end
 
@@ -566,9 +617,12 @@ end
 function MainScene:gameOver()
     isGameOver = true
 
+    scheduler.unscheduleGlobal(self.updateSchedule)
+    scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+    scheduler.unscheduleGlobal(self.jumpSchedule)
+
     self.pigAnimation:setAnimation(0, "dead", true)
     self.world:stop()
-    scheduler.unscheduleGlobal(self.updateSchedule)
     self.baseLayer:removeFromParent()
 
     if score > maxScore then
@@ -590,10 +644,25 @@ function MainScene:onEnter()
     self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
         self:update(dt)
     end)
+
+    self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
+        MAP_MOVE_SPEED = MAP_MOVE_SPEED + SPEED_CHANGE_NUM
+        self:calSpeed()
+        for _, body in ipairs(self.mapBodys) do 
+            body:setVelocity(-MAP_MOVE_SPEED, 0)
+        end
+    end, SPEED_CHANGE_TIME)
 end
 
 function MainScene:onExit()
     self.world:removeAllCollisionListeners()
+end
+
+function MainScene:calSpeed()
+    local time = (JUMP_GE_ZI_HOR * TILE_WIDTH) / MAP_MOVE_SPEED
+    ROLE_JUMP_SPEED = (2 * JUMP_GE_ZI_VER * TILE_WIDTH) / time
+
+    ROLE_FALL_SPEED = MAP_MOVE_SPEED
 end
 
 return MainScene
