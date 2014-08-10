@@ -2,6 +2,7 @@
 #include "CCPhysicsBody.h"
 #include "CCPhysicsWorld.h"
 #include "CCPhysicsShape.h"
+#include "..\..\..\scripting\lua\cocos2dx_support\CCLuaEngine.h"
 
 CCPhysicsBody *CCPhysicsBody::defaultStaticBody(CCPhysicsWorld *world)
 {
@@ -34,6 +35,7 @@ CCPhysicsBody::CCPhysicsBody(CCPhysicsWorld *world)
 , m_node(NULL)
 , m_tag(0)
 , m_postIsSleeping(false)
+, m_posHandle(0)
 {
     m_space = m_world->getSpace();
     m_shapes = CCArray::create();
@@ -569,4 +571,21 @@ CCPhysicsShape* CCPhysicsBody::getShape(cpShape *shape)
 		}
 	}
 	return NULL;
+}
+
+void CCPhysicsBody::updateBodyPostion(cpBody *body, cpFloat dt)
+{
+	CCLuaEngine *engine = dynamic_cast<CCLuaEngine*>(CCScriptEngineManager::sharedManager()->getScriptEngine());
+	CCLuaStack *stack = engine->getLuaStack();
+
+	CCPhysicsBody *ccBody = CCPhysicsWorld::shareWorld()->getBodyByCpBody(body);
+	stack->pushCCObject(ccBody, "CCPhysicsBody");
+	stack->pushFloat(dt);
+	stack->executeFunctionByHandler(ccBody->m_posHandle, 2);
+}
+
+void CCPhysicsBody::setBodyPostionHandle(int handler)
+{
+	m_body->position_func = updateBodyPostion;
+	m_posHandle = handler;
 }

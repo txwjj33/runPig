@@ -56,6 +56,8 @@ class CCPhysicsBody : public CCObject
     const char *getName(void);
     void setName(const char *name);
 
+    void setBodyPostionHandle(LUA_FUNCTION handler);
+
     // body behaviors
     bool isSleeping(void);
     void activate(void);

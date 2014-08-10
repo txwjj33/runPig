@@ -1,6 +1,6 @@
 /*
 ** Lua binding: CCPhysicsWorld_luabinding
-** Generated automatically by tolua++-1.0.92 on 07/27/14 22:12:32.
+** Generated automatically by tolua++-1.0.92 on 08/10/14 13:33:33.
 */
 
 #include "CCPhysicsWorld_luabinding.h"
@@ -1067,6 +1067,39 @@ static int tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_setName00(lua_State* to
 #ifndef TOLUA_RELEASE
  tolua_lerror:
  tolua_error(tolua_S,"#ferror in function 'setName'.",&tolua_err);
+ return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
+/* method: setBodyPostionHandle of class  CCPhysicsBody */
+#ifndef TOLUA_DISABLE_tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_setBodyPostionHandle00
+static int tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_setBodyPostionHandle00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+ tolua_Error tolua_err;
+ if (
+     !tolua_isusertype(tolua_S,1,"CCPhysicsBody",0,&tolua_err) ||
+     (tolua_isvaluenil(tolua_S,2,&tolua_err) || !toluafix_isfunction(tolua_S,2,"LUA_FUNCTION",0,&tolua_err)) ||
+     !tolua_isnoobj(tolua_S,3,&tolua_err)
+ )
+  goto tolua_lerror;
+ else
+#endif
+ {
+  CCPhysicsBody* self = (CCPhysicsBody*)  tolua_tousertype(tolua_S,1,0);
+  LUA_FUNCTION handler = (  toluafix_ref_function(tolua_S,2,0));
+#ifndef TOLUA_RELEASE
+  if (!self) tolua_error(tolua_S,"invalid 'self' in function 'setBodyPostionHandle'", NULL);
+#endif
+  {
+   self->setBodyPostionHandle(handler);
+  }
+ }
+ return 0;
+#ifndef TOLUA_RELEASE
+ tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'setBodyPostionHandle'.",&tolua_err);
  return 0;
 #endif
 }
@@ -5511,6 +5544,7 @@ TOLUA_API int tolua_CCPhysicsWorld_luabinding_open (lua_State* tolua_S)
    tolua_function(tolua_S,"create",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_create00);
    tolua_function(tolua_S,"getName",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_getName00);
    tolua_function(tolua_S,"setName",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_setName00);
+   tolua_function(tolua_S,"setBodyPostionHandle",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_setBodyPostionHandle00);
    tolua_function(tolua_S,"isSleeping",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_isSleeping00);
    tolua_function(tolua_S,"activate",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_activate00);
    tolua_function(tolua_S,"sleep",tolua_CCPhysicsWorld_luabinding_CCPhysicsBody_sleep00);

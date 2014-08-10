@@ -13,6 +13,8 @@ using namespace cocos2d;
 
 const char *CCPhysicsWorld::POST_STEP_CALLBACK_KEY = "DEFAULT_POST_STEP_CALLBACK";
 
+CCPhysicsWorld * CCPhysicsWorld::m_sInstance = NULL;
+
 CCPhysicsWorld *CCPhysicsWorld::create(void)
 {
     CCPhysicsWorld *world = new CCPhysicsWorld();
@@ -47,6 +49,8 @@ CCPhysicsWorld::~CCPhysicsWorld(void)
 
 bool CCPhysicsWorld::init(void)
 {
+	m_sInstance = this;
+
     m_space = cpSpaceNew();
     cpSpaceSetGravity(m_space, cpvzero);
     cpSpaceSetUserData(m_space, (cpDataPointer)this);
@@ -395,8 +399,8 @@ void CCPhysicsWorld::step(float dt)
 
 void CCPhysicsWorld::update(float dt)
 {
-    static float min = 1.0f / 30.f;
-    if (dt < min) dt = min;
+    //static float min = 1.0f / 30.f;
+    //if (dt < min) dt = min;
     step(dt);
 }
 

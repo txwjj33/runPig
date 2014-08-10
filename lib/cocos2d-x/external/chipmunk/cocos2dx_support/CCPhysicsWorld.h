@@ -25,6 +25,16 @@ public:
     static CCPhysicsWorld *create(void);
     virtual ~CCPhysicsWorld(void);
 
+	static CCPhysicsWorld* shareWorld()
+	{
+		if (m_sInstance == NULL)
+		{
+			CCAssert(false, "world was not create");
+		}
+		
+		return m_sInstance;
+	}
+
     cpSpace *getSpace(void);
     CCPhysicsDebugNode *createDebugNode(void);
 
@@ -102,6 +112,8 @@ private:
     CCArray *m_addedBodies;
     CCArray *m_addedShapes;
     CCArray *m_listeners;
+
+	static CCPhysicsWorld* m_sInstance;
 
     static const char *POST_STEP_CALLBACK_KEY;
 

@@ -19,6 +19,14 @@ COLLISION_TYPE_STUCK2 = 11
 COLLISION_TYPE_STUCK3 = 12
 COLLISION_TYPE_STUCK4 = 13
 
+ROLE_STATE_ROAD = 1                   --在路上
+ROLE_STATE_JUMP = 2                   --跳起
+ROLE_STATE_JUMP_FALL = 3              --跳跃到最高点落下
+ROLE_STATE_FALL = 4                   --自动落下
+ROLE_STATE_COLLSION_TOP = 5           --撞到上面的格子
+
+local roleState = ROLE_STATE_JUMP_FALL
+
 local STRING_MAX_SCORE = "MAX_SCORE"
 local STRING_MUSIC = "MUSIC"
 
@@ -26,9 +34,11 @@ MAP_COUNT = 1
 local rolePosX = 0
 local sYunWidth = 0
 
+local wudi = fasle       --当自动落下的时候是无敌的
+
 local roleSize = 0
 local isGameOver = false
-local jumping = false
+--local jumping = false
 
 local font = "AGENTORANGE.ttf"
 
@@ -125,10 +135,11 @@ function MainScene:ctor()
 end
 
 function MainScene:roleJump()
-    jumping = true
+    --jumping = true
+    roleState = ROLE_STATE_JUMP
 
-    ROLE_JUMP_SPEED = 200
-    self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+    --ROLE_JUMP_SPEED = 200
+    --self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
     self.pigAnimation:setAnimation(0, "jump", true)
 
     local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
@@ -137,8 +148,8 @@ function MainScene:roleJump()
     local posY = self.roleBody:getPositionY()
     self.jumpSchedule = scheduler.performWithDelayGlobal(function(dt)
         print("performWithDelayGlobal: " .. time)
-        self.roleBody:setVelocity(ccp(0, -ROLE_JUMP_SPEED))
-
+        --self.roleBody:setVelocity(ccp(0, -ROLE_JUMP_SPEED))
+        roleState = ROLE_STATE_JUMP_FALL
         local posY2 = self.roleBody:getPositionY()
         print("true speed: ", (posY2 - posY) / time)
     end, time)
@@ -248,11 +259,24 @@ function MainScene:addButtons()
             event.target:setScale(1.0)
         end)
         :onButtonClicked(function(event)
-            package.loaded["scenes.MainScene"] = nil
-            display.replaceScene(require("scenes.MainScene").new())
+            if CHEATING_MODE then
+                self:fuhuo()
+            else
+                package.loaded["scenes.MainScene"] = nil
+                display.replaceScene(require("scenes.MainScene").new())
+            end
         end)
         :align(display.CENTER, WIN_WIDTH / 2, WIN_HEIGHT / 2)
         :addTo(self)
+end
+
+function MainScene:fuhuo()
+    isGameOver = false
+    wudi = true
+    self:onEnter()
+
+    self.pigAnimation:setAnimation(0, "run", true)
+    self.baseLayer:setTouchEnabled(true)
 end
 
 function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
@@ -332,7 +356,7 @@ function MainScene:addNewMap(posX, body, diamondTable, roadPosYTable)
                         else
                             local vertexes = CCPointArray:create(4)
 					        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
-					        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
+					        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2)) 
 					        --vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 					        --vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
@@ -433,11 +457,16 @@ function MainScene:addMapBody(posX)
 	local body = CCPhysicsBody:create(self.world, 1, 1)
     self.world:addBody(body)
 	body:setPosition(ccp(posX, 0))
-	body:setVelocity(-MAP_MOVE_SPEED, 0)
-	body:setForce(0, -GRAVITY)
-	--body->position_func = updateBodyPostion;
+	--body:setVelocity(-MAP_MOVE_SPEED, 0)
+	--body:setForce(0, -GRAVITY)
+
+    body:setBodyPostionHandle(handler(self, self.onBodyPostionListener))
 
 	return body
+end
+
+function MainScene:onBodyPostionListener(body, dt)
+    body:setPosition(ccp(body:getPositionX() - dt * MAP_MOVE_SPEED, 0))
 end
 
 function MainScene:createRole(pos)
@@ -479,11 +508,30 @@ function MainScene:createRole(pos)
 	local roleBody = self.world:createPolygonBody(1, vexArray)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
     roleBody:setPosition(rolePos)
-    roleBody:setVelocity(0, -MAP_MOVE_SPEED)
-    roleBody:setVelocity(0, -200)
+    --roleBody:setVelocity(0, -MAP_MOVE_SPEED)
+    --roleBody:setVelocity(0, -200)
     roleBody:bind(self.pigAnimation)
 
+    roleBody:setBodyPostionHandle(handler(self, self.onRolePostionListener))
+
     self.roleBody = roleBody
+end
+
+function MainScene:onRolePostionListener(body, dt)
+    if roleState == ROLE_STATE_ROAD then
+        --nothing to do
+    elseif roleState == ROLE_STATE_JUMP then
+        local x, y = body:getPosition()
+        --print("y, dt," .. y .. "  " .. dt)
+        --print("speed," .. ROLE_JUMP_SPEED)
+        body:setPosition(ccp(x, y + dt * ROLE_JUMP_SPEED))
+    elseif roleState == ROLE_STATE_JUMP_FALL or roleState == ROLE_STATE_COLLSION_TOP then
+        local x, y = body:getPosition()
+        body:setPosition(ccp(x, y - dt * ROLE_JUMP_SPEED))
+    elseif roleState == ROLE_STATE_FALL then
+        local x, y = body:getPosition()
+        body:setPosition(ccp(x, y - dt * ROLE_FALL_SPEED))
+    end
 end
 
 function MainScene:addBottomLineShape()
@@ -541,12 +589,12 @@ function MainScene:onCollisionBegin(event)
     local collisionType = shape2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
-        jumping = false
-
+        --jumping = false
+        wudi = false
 		self.collisionRoadCount = self.collisionRoadCount + 1
 		--给role一个力抵消重力
-        body1:setForce(ccp(0, -GRAVITY))
-        body1:setVelocity(ccp(0, 0))
+        --body1:setForce(ccp(0, -GRAVITY))
+        --body1:setVelocity(ccp(0, 0))
 
         local roadPosY = 0
         if self.m_pOldRoadPosY[shape2] then
@@ -557,16 +605,19 @@ function MainScene:onCollisionBegin(event)
         local x, y = body1:getPosition()
         body1:setPosition(ccp(x, roadPosY + roleHeight / 2))
 
-        if self.pigAnimation:isPlayAnimation("jump") then
+
+        if roleState == ROLE_STATE_JUMP_FALL then
             self.pigAnimation:setAnimation(0, "run", true)
         end
-    elseif (collisionType == COLLISION_TYPE_ROAD_TOP) then
-        local vx, vy = body1:getVelocity()
-        print(vx .. vy)
-        if vy > 0 then
-            body1:setVelocity(vx, -vy)
-        end
-    elseif (collisionType == COLLISION_TYPE_DIAMOND) then
+        roleState = ROLE_STATE_ROAD
+    elseif collisionType == COLLISION_TYPE_ROAD_TOP then
+        --local vx, vy = body1:getVelocity()
+        --print(vx .. vy)
+        --if vy > 0 then
+        --    body1:setVelocity(vx, -vy)
+        --end
+        roleState = ROLE_STATE_COLLSION_TOP
+    elseif collisionType == COLLISION_TYPE_DIAMOND then
         diamondScore = diamondScore + DIAMOND_SCORE
         if self.m_pOldDiamonds[shape2] then
             self.m_pOldDiamonds[shape2]:removeFromParent()
@@ -577,8 +628,13 @@ function MainScene:onCollisionBegin(event)
             body2:removeShape(shape2)
             print("remove diamond")
         end
-    else
+    elseif collisionType == COLLISION_TYPE_BOTTOM_LINE 
+        or collisionType == COLLISION_TYPE_ROAD_LEFT then
         self:gameOver()
+    else
+        if not wudi then
+            self:gameOver()
+        end
     end
 
     return false
@@ -604,9 +660,13 @@ function MainScene:onSeparate(event)
 		
 		--离开所有的道路，恢复重力效果
 		if (self.collisionRoadCount == 0) then
-			body1:setForce(ccp(0, 0))
-            if not jumping then
-                body1:setVelocity(0, -ROLE_FALL_SPEED)
+			--body1:setForce(ccp(0, 0))
+   --         if not jumping then
+   --             body1:setVelocity(0, -ROLE_FALL_SPEED)
+   --         end
+            if roleState ~= ROLE_STATE_JUMP then
+                roleState = ROLE_STATE_FALL
+                wudi = true
             end
         end
     end
@@ -619,11 +679,14 @@ function MainScene:gameOver()
 
     scheduler.unscheduleGlobal(self.updateSchedule)
     scheduler.unscheduleGlobal(self.updateSpeedSchedule)
-    scheduler.unscheduleGlobal(self.jumpSchedule)
+    if self.jumpSchedule then
+        scheduler.unscheduleGlobal(self.jumpSchedule)
+        self.jumpSchedule = true
+    end
 
     self.pigAnimation:setAnimation(0, "dead", true)
     self.world:stop()
-    self.baseLayer:removeFromParent()
+    self.baseLayer:setTouchEnabled(false)
 
     if score > maxScore then
         maxScore = score
@@ -648,9 +711,9 @@ function MainScene:onEnter()
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
         MAP_MOVE_SPEED = MAP_MOVE_SPEED + SPEED_CHANGE_NUM
         self:calSpeed()
-        for _, body in ipairs(self.mapBodys) do 
-            body:setVelocity(-MAP_MOVE_SPEED, 0)
-        end
+        --for _, body in ipairs(self.mapBodys) do 
+        --    body:setVelocity(-MAP_MOVE_SPEED, 0)
+        --end
     end, SPEED_CHANGE_TIME)
 end
 

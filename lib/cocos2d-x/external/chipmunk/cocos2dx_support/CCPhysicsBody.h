@@ -84,6 +84,10 @@ public:
     void setPositionX(float x);
     void setPositionY(float y);
 
+#if CC_LUA_ENGINE_ENABLED > 0
+	void setBodyPostionHandle(int handler);
+#endif
+
     float getAngle(void);
     void setAngle(float angle);
     
@@ -152,6 +156,9 @@ private:
 
     // helper
     CCPhysicsShape *addShape(cpShape *shape);
+
+	static void updateBodyPostion(cpBody *body, cpFloat dt);
+	int m_posHandle;
 };
 
 #endif // __CCPHYSICS_BODY_H_
