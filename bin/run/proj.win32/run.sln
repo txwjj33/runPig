@@ -8,9 +8,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "run", "run.vcxproj", "{7166
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cocos2dx_2012", "..\..\..\lib\proj.win32\cocos2dx_2012.vcxproj", "{9E05AA4B-1A09-433C-B1DF-BCE6675EC0D5}"
 EndProject
-Project("{5697748A-77EF-44CA-8824-4F5637E5945B}") = "temp_run-debug", "C:\Users\txwjj33\Documents\BabeLua\Project\temp_run-debug\temp_run-debug.luaproj", "{E439935D-B2A2-46AE-856D-2AA408428F33}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spine-c", "..\spine-c\spine-c.vcxproj", "{5D74934A-7512-45EE-8402-7B95D3642E85}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "talkingData", "..\..\..\talkingData\proj.win32\talkingData\talkingData.vcxproj", "{048BABCF-2F16-4513-B9EA-49D876FEB332}"
+EndProject
+Project("{5697748A-77EF-44CA-8824-4F5637E5945B}") = "temp_run-debug", "C:\Users\txwjj33\Documents\BabeLua\Project\temp_run-debug\temp_run-debug.luaproj", "{E439935D-B2A2-46AE-856D-2AA408428F33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,16 +44,6 @@ Global
 		{9E05AA4B-1A09-433C-B1DF-BCE6675EC0D5}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{9E05AA4B-1A09-433C-B1DF-BCE6675EC0D5}.Release|Win32.ActiveCfg = Release|Win32
 		{9E05AA4B-1A09-433C-B1DF-BCE6675EC0D5}.Release|Win32.Build.0 = Release|Win32
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Win32.ActiveCfg = Release|Any CPU
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -62,6 +54,26 @@ Global
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Release|Win32.ActiveCfg = Release|Win32
 		{5D74934A-7512-45EE-8402-7B95D3642E85}.Release|Win32.Build.0 = Release|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Debug|Win32.ActiveCfg = Debug|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Debug|Win32.Build.0 = Debug|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Release|Any CPU.ActiveCfg = Release|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Release|Win32.ActiveCfg = Release|Win32
+		{048BABCF-2F16-4513-B9EA-49D876FEB332}.Release|Win32.Build.0 = Release|Win32
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E439935D-B2A2-46AE-856D-2AA408428F33}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

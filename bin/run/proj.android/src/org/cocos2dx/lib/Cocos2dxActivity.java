@@ -33,6 +33,7 @@ import android.os.Message;
 import android.view.ViewGroup;
 import android.util.Log;
 import android.widget.FrameLayout;
+import com.tendcloud.tenddata.TalkingDataGA;
 
 public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelperListener {
 	// ===========================================================
@@ -67,6 +68,9 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     	this.init();
 
 		Cocos2dxHelper.init(this, this);
+		
+		TalkingDataGA.sPlatformType = TalkingDataGA.PLATFORM_TYPE_COCOS2DX;
+		TalkingDataGA.init(this, "97EFCFB9737C78FDFCF55D94C49BB2CA", "360");
 	}
 
 	// ===========================================================
@@ -83,6 +87,8 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
 		Cocos2dxHelper.onResume();
 		this.mGLSurfaceView.onResume();
+		
+		TalkingDataGA.onResume(this);
 	}
 
 	@Override
@@ -91,6 +97,8 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
 		Cocos2dxHelper.onPause();
 		this.mGLSurfaceView.onPause();
+		
+		TalkingDataGA.onPause(this);
 	}
 
 	@Override

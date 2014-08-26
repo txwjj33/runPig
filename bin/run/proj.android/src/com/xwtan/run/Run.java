@@ -24,6 +24,9 @@ THE SOFTWARE.
 package com.xwtan.run;
 
 import org.cocos2dx.lib.Cocos2dxActivity;
+import org.cocos2dx.lib.Cocos2dxHelper;
+
+import com.tendcloud.tenddata.TalkingDataGA;
 //import com.pkag.m.MyMDListner;
 //import com.pkag.m.MyMediaManager;
 
@@ -42,9 +45,14 @@ import android.util.Log;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
+import com.tendcloud.tenddata.TalkingDataGA;
+
 public class Run extends Cocos2dxActivity {
 	
 	static private Run sInstance;
+	
+	private String talkingDataAppID =  "97EFCFB9737C78FDFCF55D94C49BB2CA";
+	private String talkingDataChannelID =  "360";
 	
 	private static Cocos2dxActivity context;
 	
@@ -60,6 +68,9 @@ public class Run extends Cocos2dxActivity {
 		Log.d("Youmi", "onCreate, show ads!");
 		
 		context = (Cocos2dxActivity) Cocos2dxActivity.getContext();
+		
+		TalkingDataGA.sPlatformType = TalkingDataGA.PLATFORM_TYPE_COCOS2DX;
+		TalkingDataGA.init(this, talkingDataAppID, talkingDataChannelID);
 		
 //		AdManager.getInstance(this).init("6699b8ebfd92e055", "64956e39f0ed9461", true);
 //		SpotManager.getInstance(this).loadSpotAds();
@@ -91,6 +102,20 @@ public class Run extends Cocos2dxActivity {
             SpotManager.getInstance(this).unregisterSceenReceiver();
             super.onDestroy();
     }
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		TalkingDataGA.onResume(this);
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		TalkingDataGA.onPause(this);
+	}
 
     static {
     	System.loadLibrary("game");
@@ -100,6 +125,12 @@ public class Run extends Cocos2dxActivity {
         final Vibrator vib = (Vibrator) sInstance.getSystemService(Context.VIBRATOR_SERVICE);
         vib.vibrate(1000);
     }
+    
+    ////talkingdata相关
+    public static void talkingDataOnCreate(){
+    	//TalkingDataGA.getDeviceId();
+    }
+    
 
     
     public static void showSpotAd(){

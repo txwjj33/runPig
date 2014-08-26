@@ -2,6 +2,8 @@
 #include "cocos2d.h"
 #include "AppDelegate.h"
 #include "platform/android/jni/JniHelper.h"
+#include "TalkingData.h"
+#include "TDGAJniHelper.h"
 #include <jni.h>
 #include <android/log.h>
 
@@ -16,6 +18,7 @@ extern "C"
 jint JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     JniHelper::setJavaVM(vm);
+    TDGAJniHelper::setJavaVM(vm);
     return JNI_VERSION_1_4;
 }
 

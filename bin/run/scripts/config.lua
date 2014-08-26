@@ -5,6 +5,8 @@ DEBUG_FPS = true
 
 ANDOIRD = false
 
+CHEAT_MODE = true
+
 --¿ªÆôÅö×²¼ì²âÇøÓòÏÔÊ¾
 DEBUG_COLLSION = true
 
@@ -15,7 +17,7 @@ CONFIG_SCREEN_WIDTH  = 1280
 CONFIG_SCREEN_HEIGHT = 720
 
 -- auto scale mode
-CONFIG_SCREEN_AUTOSCALE = kResolutionExactFit
+--CONFIG_SCREEN_AUTOSCALE = kResolutionExactFit
 
 GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
@@ -23,7 +25,7 @@ GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 GRAVITY = 0
 
 MAP_MOVE_SPEED_LIMIT = 830
-MAP_MOVE_SPEED = 630
+MAP_MOVE_SPEED = 730
 ROLE_JUMP_SPEED = 0
 ROLE_FALL_SPEED = 0
 
@@ -71,18 +73,284 @@ LEVEL_NUM_CONF =
 LEVEL_RECYCLE_MIN = 7
 LEVEL_RECYCLE_MAX = 9
 
+LEVEL_MAX = 7
+
 checkMap = false
 if checkMap then
-    for k, v in ipairs(LEVEL_NUM_CONF) do
-        for i = 1, v do
-            local mapPath = string.format("levels/%d.%d.tmx", k, i)
-            print(mapPath)
-	        local map = CCTMXTiledMap:create(mapPath)
-            if not map then
-                print(mapPath .. "does not exist or has problems")
+
+allMapTrue = true
+    
+local function printTableToFileHelp(file, luaTable, indent)
+    indent = indent or 0
+    for k, v in pairs(luaTable) do
+        if k == "mapPos" then
+            local szPrefix = string.rep("    ", indent)
+            local line = szPrefix .. "[\"mapPos\"] = ccp(" .. v.x .. ", " .. v.y .. "),"
+            file:write(line .. "\n")
+        else
+            if type(k) == "string" then
+                k = string.format("%q", k)
+            end
+            local szSuffix = ""
+            if type(v) == "table" then
+                szSuffix = "{"
+            end
+            local szPrefix = string.rep("    ", indent)
+            formatting = szPrefix.."["..k.."]".." = "..szSuffix
+            if type(v) == "table" then
+                file:write(formatting .. "\n")
+                printTableToFileHelp(file, v, indent + 1)
+                file:write(szPrefix.."}," .. "\n")
+            else
+                local szValue = ""
+                if type(v) == "string" then
+                    szValue = string.format("%q", v)
+                else
+                    szValue = tostring(v)
+                end
+                file:write(formatting..szValue.."," .. "\n")
             end
         end
     end
+end
+
+local function printTableToFile(fileName, luaTable, indent)
+    if not luaTable then
+        DLOG("nil")
+        return
+    end
+
+    local file = io.open(fileName, "w+b")
+    file:write("local confTable = {\n")
+    printTableToFileHelp(file, luaTable, 1)
+    file:write("}\n")
+    file:write("\n")
+    file:write("return confTable\n")
+    io.close(file)
+end
+    --for k, v in ipairs(LEVEL_NUM_CONF) do
+    --    for i = 1, v do
+    --        local mapPath = string.format("levels/%d.%d.tmx", k, i)
+    --        print(mapPath)
+	   --     local map = CCTMXTiledMap:create(mapPath)
+    --        if not map then
+    --            print(mapPath .. "does not exist or has problems")
+    --        end
+    --    end
+    --end
+    
+    local function listfile ( dir, ext, recursive )
+        -- set default
+        dir = dir or 'res/levels'
+        ext = ext or '*.*'                      -- *.* file / directory
+        local rec = recursive and '/s' or ''   -- search sub directory
+
+        -- trim quote proc
+        dir = string.gsub( dir, "[\\/]", '\\' )
+        dir = string.find( dir, '^%b""$') and string.sub( dir, 2, -2 ) or dir
+        dir = string.find( dir, '.+\\$') and string.sub( dir, 1, -2 ) or dir
+
+        if string.find( ext, "^[\\/]$" ) then  -- directory flag /ad
+            ext = '/ad'
+        else                                    -- file flag /a-d and ext *.* or etc.
+            ext = '/a-d '..ext
+        end
+
+        -- in linux use ls
+        --local cmd = "pushd %q &dir %s /b %s &popd"
+        local cmd = "dir %s /b"
+        cmd = string.format( cmd, dir, ext, rec )
+
+        local t = {}
+        local list = io.popen( cmd )
+        for line in list:lines() do
+            line = recursive and line or dir..'/'..line
+            t[#t+1] = line
+            --print(line)
+        end
+        list:close()
+
+        return t
+    end
+
+    local function printChinese ( path, index )
+        local file = io.open(path, 'r')
+        if not file then
+            print( "Invalid path: ", index, path )
+            return
+        end
+
+        local text = file:read('*all')
+        if not text then
+            print( "Nil text path: ", index, path )
+            file:close()
+            return
+        end
+
+        print( string.format( "[%03d] Text of %q", index, path ) )
+        for seg in string.gmatch( text,  "[^%w%p%s%c]+" ) do -- allow tab \t to replace %c to \\r\\n
+            print( seg )
+        end
+        file:close()
+    end
+
+    local function getNums(path)
+        local nums = {}
+        local pos1 = string.find(path, '/') 
+        local pos = string.find(path, '_') 
+        while pos do
+            local num = string.sub(path, pos1 + 1, pos -1)
+            table.insert(nums, tonumber(num))
+            pos1 = pos
+            pos = string.find(path, '_', pos +1)
+        end 
+        pos = string.find(path, ".tmx", pos1 +1)
+        if not pos then print(path) end
+        local num = string.sub(path, pos1 + 1, pos - 1)
+        table.insert(nums, tonumber(num))
+        return nums
+    end
+
+    local mapCount = {}
+    local function changeName(path)
+        
+        local file = io.open(path, 'r')
+        if file then
+            local nums = getNums(path)
+            local content = file:read('*a')
+            local name1 = string.format("lev111112/%d_%d_%d_", nums[1], nums[3], nums[4])
+            if mapCount[name1] then
+                mapCount[name1] = mapCount[name1] + 1
+            else
+                mapCount[name1] = 1
+            end
+            local name = name1 .. mapCount[name1] .. ".tmx"
+            print(name)
+            local tfile = io.open(name, 'w+b')
+            tfile:write(content)
+        end
+    end
+
+     local function checkMap ( path, index, t )
+        local file = io.open(path, 'r')
+        if not file then
+            --print( "Invalid path: ", index, path )
+            return
+        end
+
+        --local mapPath = string.format("levels/%d.%d.tmx", k, i)
+        --string.gsub(path, '\\', "/")
+        
+
+        print("map path: " .. path)
+	    local map = CCTMXTiledMap:create(path)
+        if not map then
+            print(path .. "does not exist or has problems")
+            allMapTrue = false
+        end
+
+        local mapSize = map:getMapSize()
+        local layer = map:layerNamed("road1")
+        local nums = getNums(path)
+
+        local function checkTile(isStart)
+            local startPos, endPos, step, num
+            if isStart then
+                startPos, endPos, step, num = 0, mapSize.width - 1, 1, nums[2]
+            else
+                startPos, endPos, step, num = mapSize.width - 1, 0, -1, nums[3]
+            end
+
+            for i = startPos, endPos, step do
+                for j = 0, mapSize.height -1 do
+                    local tile = layer:tileAt(ccp(i, j))
+                    if tile then
+                        if j == num - 1 then
+                            return true
+                        else
+                            print("---------------------------------------------------") 
+                            if isStart then 
+                                print("check start false!!!!!!!!!!!!!!!!!!!!!") 
+                                allMapTrue = false
+                            else
+                                print("check end false!!!!!!!!!!!!!!!!!!!!!") 
+                                allMapTrue = false
+                            end
+                            print("---------------------------------------------------") 
+                            return false
+                            --assert(0)
+                        end
+                    end
+                end
+            end
+        end
+
+        
+        if not layer then
+            print(path .. "does not exist layer road1")
+            allMapTrue = false
+        else
+            if checkTile(true) then 
+                --print("check start is true") 
+            end
+            if checkTile(false) then 
+            --print("check end is true") 
+            end
+        end
+
+        local nextLevel = 0
+        if nums[1] < LEVEL_MAX then
+            nextLevel = nums[1] + 1
+        else
+            nextLevel = LEVEL_MAX
+        end
+
+        for index1, path1 in ipairs(t) do
+            if path1 ~= path and not string.find(path1, "mszy") then 
+                local nums1 = getNums(path1)
+                if nums1[1] == nextLevel then
+                    if nums1[2] == nums[3] then
+                        --print("check xian jie is true")
+                        return 
+                    end
+                elseif nums1[1] > nextLevel then
+                    print("---------------------------------------------------") 
+                    print("check xian jie is false")
+                    print("---------------------------------------------------") 
+                    allMapTrue = false
+                    return
+                end
+            end
+        end
+    end
+
+    local function main ()
+        -- your search directory
+        --local dir = [[D:\levels]]
+        local t = listfile( dir, "*.txt", false ) -- false to search sub dir
+
+        for index, path in ipairs(t) do
+            checkMap(path,index, t)
+            --changeName(path)
+        end
+
+        if allMapTrue then
+            print("all map is checked!!")
+        else
+            print("some map has problems, please fix it!!!!!!!!")
+        end
+
+        local names = {}
+        for index, path in ipairs(t) do
+            table.insert(names, string.sub(path, 5))
+        end
+
+        printTableToFile("scripts/mapName.lua", names)
+    end
+
+    startTime = os.time()
+    main()
+    print( string.format("\n>> This function cost: %s ms", tostring(os.time()-startTime) ) )
 end
 
 

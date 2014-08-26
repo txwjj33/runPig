@@ -7,6 +7,12 @@
 #include <string>
 #include "LuaSpine.h"
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+#include "LuaTalkingData.h"
+#include "TDCCAccount.h"
+#include "TDCCTalkingDataGA.h"
+#endif
+
 using namespace std;
 using namespace cocos2d;
 using namespace CocosDenshion;
@@ -44,6 +50,9 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     // load framework
     pStack->loadChunksFromZIP("res/framework_precompiled.zip");
+
+	tolua_talkingdata_open(m_state);
+	TDCCAccount::setAccount(TDCCTalkingDataGA::getDeviceId());
 
     // set script path
     string path = CCFileUtils::sharedFileUtils()->fullPathForFilename("scripts/main.lua");

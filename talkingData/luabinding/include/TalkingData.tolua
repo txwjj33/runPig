@@ -1,0 +1,8 @@
+
+$#include "LuaTalkingData.h"
+
+$pfile "include/TDCCTalkingDataGA.tolua"
+$pfile "include/TDCCAccount.tolua"
+$pfile "include/TDCCItem.tolua"
+$pfile "include/TDCCMission.tolua"
+$pfile "include/TDCCVirtualCurrency.tolua"
