@@ -60,12 +60,20 @@ local caodiCount = 0
 --×êÊ¯shape±í
 local diamondTable = {}
 local roadShapeTable = {}
+local stuckShapeTable = {}
 
 local newMapShapeInited = false
 
 local roleHeight = 0
 
 local rolePosX = 0
+
+MAP_MOVE_SPEED = MAP_MOVE_SPEED_START
+GRAVITY = 0
+ROLE_JUMP_SPEED = 0
+ROLE_FALL_SPEED = 0
+
+TILE_WIDTH = 60
 
 local MAP_ITEMS = 
 {
@@ -353,33 +361,38 @@ end
 
 function MainScene:addNewMap(posX, body)
     mapPath = ""
-    if firstLoadMap then
-        mapPath = mapName[1]
-        firstLoadMap = false
+
+    if MAP_TEST then
+        mapPath = MAP_TEST_FILE
     else
-        local nextLevel = {}
-        nextLevel[1] = math.min(levelNums[1] + 1, LEVEL_MAX)
-        nextLevel[2] = levelNums[3]
-        local mapNameFirstPart = string.format("levels/%d_%d", nextLevel[1], nextLevel[2])
-        local min, max
-        for k, name in ipairs(mapName) do
-            if string.find(name, mapNameFirstPart) then
-                if not min then
-                    min = k
-                end
-            else
-                if min then
-                    max = k - 1
-                    break
+        if firstLoadMap then
+            mapPath = mapName[1]
+            firstLoadMap = false
+        else
+            local nextLevel = {}
+            nextLevel[1] = math.min(levelNums[1] + 1, LEVEL_MAX)
+            nextLevel[2] = levelNums[3]
+            local mapNameFirstPart = string.format("levels/%d_%d", nextLevel[1], nextLevel[2])
+            local min, max
+            for k, name in ipairs(mapName) do
+                if string.find(name, mapNameFirstPart) then
+                    if not min then
+                        min = k
+                    end
+                else
+                    if min then
+                        max = k - 1
+                        break
+                    end
                 end
             end
-        end
 
-        local mapID = math.random(min, max)
-        print(mapID)
-        mapPath = mapName[mapID]
-	    print("create new map: " .. mapPath)
-        levelNums = getNums(mapPath)
+            local mapID = math.random(min, max)
+            print(mapID)
+            mapPath = mapName[mapID]
+	        print("create new map: " .. mapPath)
+            levelNums = getNums(mapPath)
+        end
     end
 
     local map = CCTMXTiledMap:create(mapPath)
@@ -458,6 +471,7 @@ function MainScene:addShapesAtPos(x, body, map)
 			        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 			        local shape = body:addPolygonShape(vertexes)
                     shape:setCollisionType(v)
+                    stuckShapeTable[shape] = ccp(pos.x, pos.y + tileSize.height / 2)
                 elseif v == COLLISION_TYPE_STUCK2 then
                     local vertexes = CCPointArray:create(3)
                     vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2))
@@ -741,6 +755,9 @@ function MainScene:onCollisionBegin(event)
             then
             score  = score + 1
             self.scoreLabel:setString(score)
+            if stuckShapeTable[shape2] then
+                stuckShapeTable[shape2] = nil
+            end
         end
         return false
     end
@@ -771,7 +788,7 @@ function MainScene:onCollisionBegin(event)
 
         wudi = false
 		self.collisionRoadCount = self.collisionRoadCount + 1
-        print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
+        --print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
 		--¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
@@ -781,7 +798,7 @@ function MainScene:onCollisionBegin(event)
         local vx, vy = body1:getVelocity()
         print(vx .. vy)
         if vy > 0 then
-            body1:setVelocity(vx, -vy)
+            body1:setVelocity(vx, -JUMP_FAN_TAN_XI_SHU * vy)
         end
         --roleState = ROLE_STATE_COLLSION_TOP
     elseif collisionType == COLLISION_TYPE_DIAMOND then
@@ -793,9 +810,13 @@ function MainScene:onCollisionBegin(event)
         or collisionType == COLLISION_TYPE_ROAD_LEFT then
         self:gameOver()
     else
-        if not wudi and not CHEAT_MODE then
-            self:gameOver()
+        if CHEAT_MODE or wudi then return false end
+
+        if stuckShapeTable[shape2] then
+            local map = body2:getNode()
+            body1:setPosition(ccpAdd(stuckShapeTable[shape2], ccp(map:getPosition())))
         end
+        self:gameOver()
     end
 
     return false
@@ -828,7 +849,7 @@ function MainScene:onSeparate(event)
 	--print("onSeparate collision_type: " .. collisionType)
 	if collisionType == COLLISION_TYPE_ROLE and shape2 and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
-        print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
+        --print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
 		
 		--Àë¿ªËùÓÐµÄµÀÂ·£¬»Ö¸´ÖØÁ¦Ð§¹û
 		if (self.collisionRoadCount == 0) then
@@ -882,7 +903,6 @@ function MainScene:onEnter()
 
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
         print("add speed")
-        MAP_MOVE_SPEED = MAP_MOVE_SPEED + SPEED_CHANGE_NUM
         self:calSpeed()
         for _, body in ipairs(self.mapBodys) do 
             body:setVelocity(-MAP_MOVE_SPEED, 0)           
@@ -900,8 +920,11 @@ function MainScene:onExit()
 end
 
 function MainScene:calSpeed()
+    if MAP_MOVE_SPEED >= MAP_MOVE_SPEED_LIMIT then return end
+
+    MAP_MOVE_SPEED = MAP_MOVE_SPEED + SPEED_CHANGE_NUM
     local time = (JUMP_GE_ZI_HOR * TILE_WIDTH) / MAP_MOVE_SPEED
-    ROLE_JUMP_SPEED = 2 * (2 * (JUMP_GE_ZI_VER * TILE_WIDTH + 10) / time) 
+    ROLE_JUMP_SPEED = 2 * (2 * (JUMP_GE_ZI_VER * TILE_WIDTH + JUMP_XIANG_SU_VER) / time) 
     GRAVITY = - 2 * ROLE_JUMP_SPEED / time
     --print("ROLE_JUMP_SPEED :", ROLE_JUMP_SPEED)
     --print("GRAVITY :", GRAVITY)

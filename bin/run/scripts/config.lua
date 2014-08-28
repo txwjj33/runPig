@@ -5,7 +5,12 @@ DEBUG_FPS = true
 
 ANDOIRD = false
 
-CHEAT_MODE = true
+--开启以后所有仙人掌无效
+CHEAT_MODE = false
+
+--测试单个地图
+MAP_TEST = true
+MAP_TEST_FILE = "levels/_test.tmx"
 
 --开启碰撞检测区域显示
 DEBUG_COLLSION = true
@@ -22,61 +27,47 @@ CONFIG_SCREEN_HEIGHT = 720
 GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
-GRAVITY = 0
-
+--地图最大速度和初始速度
 MAP_MOVE_SPEED_LIMIT = 830
-MAP_MOVE_SPEED = 500
-ROLE_JUMP_SPEED = 0
-ROLE_FALL_SPEED = 0
+MAP_MOVE_SPEED_START = 500
 
+--跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7
 JUMP_GE_ZI_VER = 3
-
-TILE_WIDTH = 60
+--跳跃的垂直的多余像素
+JUMP_XIANG_SU_VER = 10
+--碰到上面格子后反弹速度系数
+JUMP_FAN_TAN_XI_SHU = 0.1
 
 --作弊模式，点击restart以后复活
-CHEATING_MODE = false 
+--有问题，暂未使用
+--CHEATING_MODE = false 
 
 --速度改变的间隔
 SPEED_CHANGE_TIME = 5
-
 --速度改变的增加
 SPEED_CHANGE_NUM = 10
 
 --第一个障碍物上面的顶点预留的碰撞像素
-STUCK_TOP_JULI = 8
+STUCK_TOP_JULI = 18
 
+--小猪初始位置（离左上的格子数）
 ROLE_POS_X = 5
 ROLE_POS_Y = 3
 
+--同时显示几列的碰撞形状
 ROAD_SHAPE_NUM = 5
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 
+--钻石分数
 DIAMOND_SCORE = 100
 
---每个大关卡对应的小关卡数量
-LEVEL_NUM_CONF = 
-{
-    [0] = 1,
-    [1] = 11,
-    [2] = 11,
-    [3] = 8,
-    [4] = 6,
-    [5] = 4,
-    [6] = 3,
-    [7] = 3,
-    [8] = 2,
-    [9] = 2,
-}
-
---循环地图难度的最小最大值
-LEVEL_RECYCLE_MIN = 7
-LEVEL_RECYCLE_MAX = 9
-
+--关卡最大值
 LEVEL_MAX = 7
 
+--加入新的地图后用于检查地图
 checkMap = false
 if checkMap then
 
