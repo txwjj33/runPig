@@ -21,11 +21,14 @@ COLLISION_TYPE_STUCK2 = 11
 COLLISION_TYPE_STUCK3 = 12
 COLLISION_TYPE_STUCK4 = 13
 
+COLLISION_TYPE_ROAD_FIX        = 20
+COLLISION_TYPE_REMOVE_SHAPE_LINE        = 21
+
 ROLE_STATE_ROAD = 1                   --ÔÚÂ·ÉÏ
 ROLE_STATE_JUMP = 2                   --ÌøÆð
-ROLE_STATE_JUMP_FALL = 3              --ÌøÔ¾µ½×î¸ßµãÂäÏÂ
+--ROLE_STATE_JUMP_FALL = 3              --ÌøÔ¾µ½×î¸ßµãÂäÏÂ
 ROLE_STATE_FALL = 4                   --×Ô¶¯ÂäÏÂ
-ROLE_STATE_COLLSION_TOP = 5           --×²µ½ÉÏÃæµÄ¸ñ×Ó
+--ROLE_STATE_COLLSION_TOP = 5           --×²µ½ÉÏÃæµÄ¸ñ×Ó
 
 local roleState = ROLE_STATE_JUMP_FALL
 
@@ -101,7 +104,7 @@ function MainScene:ctor()
 	self.m_pOldMapBody = self:addMapBody(0)
 	self.m_pOldMap = self:addNewMap(startPos, self.m_pOldMapBody)
 
-	for i = ROLE_POS_X, ROLE_POS_X + 2 do 
+	for i = ROLE_POS_X, ROLE_POS_X + ROAD_SHAPE_NUM - 1 do 
 		self:addShapesAtPos(i, self.m_pOldMapBody, self.m_pOldMap)
 	end
 
@@ -115,7 +118,8 @@ function MainScene:ctor()
 
 	self:createRole()
 	self:addBottomLineShape()
-	self:addRoleLineShape()   --Ìí¼Ó½ÇÉ«ËùÔÚÎ»ÖÃµÄÊúÏß£¬ÓÃÓÚ¼ì²âÌø¹ýµÄÕÏ°­Êý
+	self:addRoleLineShape(COLLISION_TYPE_ROLE_LINE, 1)   --Ìí¼Ó½ÇÉ«ËùÔÚÎ»ÖÃµÄÊúÏß£¬ÓÃÓÚ¼ì²âÌø¹ýµÄÕÏ°­Êý
+	self:addRoleLineShape(COLLISION_TYPE_REMOVE_SHAPE_LINE, 3)   --Ìí¼Ó½ÇÉ«ËùÔÚÎ»ÖÃµÄÊúÏß£¬ÓÃÓÚ¼ì²âÌø¹ýµÄÕÏ°­Êý
 
     for k, v in pairs(MAP_ITEMS) do
         self:addCollisionToRoleScriptListener(v)
@@ -142,15 +146,17 @@ function MainScene:ctor()
 end
 
 function MainScene:roleJump()
-    jumping = true
+    --jumping = true
     roleState = ROLE_STATE_JUMP
 
     self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
+    self.roleBody:setForce(ccp(0, 0))
     self.pigAnimation:setAnimation(0, "jump", true)
+    print("jump speed: " .. ROLE_JUMP_SPEED)
 
-    local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
-    print("time: " .. time)
-    print("speed: " .. ROLE_JUMP_SPEED)
+    --local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
+    --print("time: " .. time)
+    --print("speed: " .. ROLE_JUMP_SPEED)
     --local posY = self.roleBody:getPositionY()
     --self.jumpSchedule = scheduler.performWithDelayGlobal(function(dt)
     --    print("performWithDelayGlobal: " .. time)
@@ -401,10 +407,14 @@ function MainScene:addShapesAtPos(x, body, map)
     local function addMapInTile()
     end
 
+    local hasTile = false
+
     local function addShapeInLayer(layer, v)
         for y = 0, mapSize.height - 1 do
 	        local tile = layer:tileAt(ccp(x, y))
 	        if tile then
+                hasTile = true
+
                 local tileSize = tile:getContentSize()
 		        local pos = ccpAdd(ccp(tile:getPosition()), ccp(tileSize.width / 2, tileSize.height / 2))
 
@@ -422,11 +432,15 @@ function MainScene:addShapesAtPos(x, body, map)
 						        ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2), 
 						        ccp(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
-                    addRoadShape(COLLISION_TYPE_ROAD,
+                    local shape = addRoadShape(COLLISION_TYPE_ROAD,
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
 					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
 
                     checkLeftRoad()
+                    roadShapeTable[shape] = {}
+                    roadShapeTable[shape].posY = pos.y + tileSize.height / 2
+                    roadShapeTable[shape].tilePosX = x
+                    roadShapeTable[shape].isTop = true
                 elseif v == COLLISION_TYPE_ROAD then
                     local shape = addRoadShape(COLLISION_TYPE_ROAD,
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
@@ -436,6 +450,7 @@ function MainScene:addShapesAtPos(x, body, map)
                     roadShapeTable[shape] = {}
                     roadShapeTable[shape].posY = pos.y + tileSize.height / 2
                     roadShapeTable[shape].tilePosX = x
+                    roadShapeTable[shape].isTop = false
                 elseif v == COLLISION_TYPE_STUCK1 then
                     local vertexes = CCPointArray:create(3)
                     vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
@@ -497,6 +512,19 @@ function MainScene:addShapesAtPos(x, body, map)
 		    addShapeInLayer(layer, v)
         end
     end  
+
+    --没有tile时，添加�?��用于碰撞到roleLine时增加后三个的tile
+    if not hasTile then
+        local layer = self.m_pOldMap:layerNamed("road1")
+	    local tilePos = layer:positionAt(ccp(x, 0))
+        local shape = addRoadShape(COLLISION_TYPE_ROAD_FIX,
+				ccp(tilePos.x, 10), 
+				ccp(tilePos.x + TILE_WIDTH, 10), 1)
+
+        roadShapeTable[shape] = {}
+        roadShapeTable[shape].tilePosX = x
+        roadShapeTable[shape].isTop = false
+    end
 end
 
 function MainScene:addShapes(map, tilePosX)
@@ -512,10 +540,10 @@ function MainScene:update(dt)
 
     if not newMapShapeInited then
         local layer = self.m_pOldMap:layerNamed("road1")
-	    local tilePos = layer:positionAt(ccp(ROLE_POS_X - 1, ROLE_POS_Y))
+	    --local tilePos = layer:positionAt(ccp(ROLE_POS_X - 1, ROLE_POS_Y))
         if self.m_pNewMap:getPositionX() < rolePosX + TILE_WIDTH * 2 then
             newMapShapeInited = true
-            for i = 0, 2 do 
+            for i = 0, ROAD_SHAPE_NUM - 1 do 
 		        self:addShapesAtPos(i, self.m_pNewMapBody, self.m_pNewMap)
 	        end
         end
@@ -595,9 +623,9 @@ function MainScene:addMapBody(posX)
 	return body
 end
 
-function MainScene:onBodyPostionListener(body, dt)
-    body:setPosition(ccp(body:getPositionX() - dt * MAP_MOVE_SPEED, 0))
-end
+--function MainScene:onBodyPostionListener(body, dt)
+--    body:setPosition(ccp(body:getPositionX() - dt * MAP_MOVE_SPEED, 0))
+--end
 
 function MainScene:createRole()
 	local layer = self.m_pOldMap:layerNamed("road1")
@@ -646,22 +674,22 @@ function MainScene:createRole()
     self.roleBody = roleBody
 end
 
-function MainScene:onRolePostionListener(body, dt)
-    if roleState == ROLE_STATE_ROAD then
-        --nothing to do
-    elseif roleState == ROLE_STATE_JUMP then
-        local x, y = body:getPosition()
-        --print("y, dt," .. y .. "  " .. dt)
-        --print("speed," .. ROLE_JUMP_SPEED)
-        body:setPosition(ccp(x, y + dt * ROLE_JUMP_SPEED))
-    elseif roleState == ROLE_STATE_JUMP_FALL or roleState == ROLE_STATE_COLLSION_TOP then
-        local x, y = body:getPosition()
-        body:setPosition(ccp(x, y - dt * ROLE_JUMP_SPEED))
-    elseif roleState == ROLE_STATE_FALL then
-        local x, y = body:getPosition()
-        body:setPosition(ccp(x, y - dt * ROLE_FALL_SPEED))
-    end
-end
+--function MainScene:onRolePostionListener(body, dt)
+--    if roleState == ROLE_STATE_ROAD then
+--        --nothing to do
+--    elseif roleState == ROLE_STATE_JUMP then
+--        local x, y = body:getPosition()
+--        --print("y, dt," .. y .. "  " .. dt)
+--        --print("speed," .. ROLE_JUMP_SPEED)
+--        body:setPosition(ccp(x, y + dt * ROLE_JUMP_SPEED))
+--    elseif roleState == ROLE_STATE_JUMP_FALL or roleState == ROLE_STATE_COLLSION_TOP then
+--        local x, y = body:getPosition()
+--        body:setPosition(ccp(x, y - dt * ROLE_JUMP_SPEED))
+--    elseif roleState == ROLE_STATE_FALL then
+--        local x, y = body:getPosition()
+--        body:setPosition(ccp(x, y - dt * ROLE_FALL_SPEED))
+--    end
+--end
 
 function MainScene:addBottomLineShape()
     local bottomWallBody = self.world:createBoxBody(0, WIN_WIDTH, 1)
@@ -670,16 +698,17 @@ function MainScene:addBottomLineShape()
     self:addCollisionToRoleScriptListener(COLLISION_TYPE_BOTTOM_LINE)
 end
 
-function MainScene:addRoleLineShape()
+function MainScene:addRoleLineShape(collisionType, tileDisWithRole)
     local width = 12
     local roleWallBody = self.world:createBoxBody(0, width, WIN_HEIGHT)
-    roleWallBody:setPosition(rolePosX - TILE_WIDTH - width / 2, WIN_HEIGHT / 2)
-    roleWallBody:setCollisionType(COLLISION_TYPE_ROLE_LINE)
+    roleWallBody:setPosition(rolePosX - TILE_WIDTH * tileDisWithRole - width / 2, WIN_HEIGHT / 2)
+    roleWallBody:setCollisionType(collisionType)
 
     for k, v in pairs(MAP_ITEMS) do
-        self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, v)
+        self:addCollisionScriptListener(collisionType, v)
     end
-    self:addCollisionScriptListener(COLLISION_TYPE_ROLE_LINE, COLLISION_TYPE_ROAD_LEFT)
+    self:addCollisionScriptListener(collisionType, COLLISION_TYPE_ROAD_LEFT)
+    self:addCollisionScriptListener(collisionType, COLLISION_TYPE_ROAD_FIX)
 end
 
 function MainScene:onCollisionListener(phase, event)
@@ -704,6 +733,7 @@ function MainScene:onCollisionBegin(event)
     local shape2 = event:getShape2()   --µØÍ¼shape
     if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
         local collisionType = shape2:getCollisionType()
+
         if collisionType == COLLISION_TYPE_STUCK1 
             or collisionType == COLLISION_TYPE_STUCK2
             or collisionType == COLLISION_TYPE_STUCK3
@@ -711,18 +741,29 @@ function MainScene:onCollisionBegin(event)
             then
             score  = score + 1
             self.scoreLabel:setString(score)
-        elseif collisionType == COLLISION_TYPE_ROAD then
-        	local map = body2:getNode()
-        	self:addShapesAtPos(roadShapeTable[shape2].tilePosX + 3, body2, map)
         end
+        return false
+    end
+
+    if shape1:getCollisionType() == COLLISION_TYPE_REMOVE_SHAPE_LINE then
+        local collisionType = shape2:getCollisionType()
+        if collisionType == COLLISION_TYPE_ROAD or collisionType == COLLISION_TYPE_ROAD_FIX then
+            if not roadShapeTable[shape2].isTop then
+        	    local map = body2:getNode()
+        	    self:addShapesAtPos(roadShapeTable[shape2].tilePosX + ROAD_SHAPE_NUM, body2, map)
+                roadShapeTable[shape2] = nil
+            end
+        elseif collisionType == COLLISION_TYPE_DIAMOND then
+            diamondTable[shape2] = nil
+        end
+        body2:removeShape(shape2)
         return false
     end
 
     local collisionType = shape2:getCollisionType()
 	--print("begin collision collision_type: " .. collisionType)
 	if (collisionType == COLLISION_TYPE_ROAD) then
-        if jumping then
-            jumping = false
+        if roleState ~= ROLE_STATE_ROAD then
             self.pigAnimation:setAnimation(0, "run", true)
             local x, y = body1:getPosition()
             body1:setPosition(ccp(x, roadShapeTable[shape2].posY + roleHeight / 2))
@@ -730,6 +771,7 @@ function MainScene:onCollisionBegin(event)
 
         wudi = false
 		self.collisionRoadCount = self.collisionRoadCount + 1
+        print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
 		--¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
         body1:setForce(ccp(0, -GRAVITY))
         body1:setVelocity(ccp(0, 0))
@@ -741,7 +783,7 @@ function MainScene:onCollisionBegin(event)
         if vy > 0 then
             body1:setVelocity(vx, -vy)
         end
-        roleState = ROLE_STATE_COLLSION_TOP
+        --roleState = ROLE_STATE_COLLSION_TOP
     elseif collisionType == COLLISION_TYPE_DIAMOND then
         diamondScore = diamondScore + DIAMOND_SCORE
         diamondTable[shape2]:removeFromParent()
@@ -768,29 +810,31 @@ function MainScene:onSeparate(event)
     local shape1 = event:getShape1()   --½ÇÉ«shape
     local shape2 = event:getShape2()   --µØÍ¼shape
 
+    local collisionType = shape1:getCollisionType()
+
     if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
-    	local collisionType = shape2:getCollisionType()
-        if collisionType == COLLISION_TYPE_DIAMOND then
-            diamondTable[shape2] = nil
-        elseif collisionType == COLLISION_TYPE_ROAD then
-        	roadShapeTable[shape2] = nil
-        end
-        body2:removeShape(shape2)
+        --if (collisionType == COLLISION_TYPE_ROAD) then return false end
+    	--local collisionType = shape2:getCollisionType()
+     --   if collisionType == COLLISION_TYPE_DIAMOND then
+     --       diamondTable[shape2] = nil
+     --   elseif collisionType == COLLISION_TYPE_ROAD then
+     --   	roadShapeTable[shape2] = nil
+     --   end
+     --   body2:removeShape(shape2)
         return false
     end
 
     --local collisionType = event:getShape2():getCollisionType()
 	--print("onSeparate collision_type: " .. collisionType)
-	if shape2 and (event:getShape2():getCollisionType() == COLLISION_TYPE_ROAD) then
+	if collisionType == COLLISION_TYPE_ROLE and shape2 and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
+        print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
 		
 		--Àë¿ªËùÓÐµÄµÀÂ·£¬»Ö¸´ÖØÁ¦Ð§¹û
 		if (self.collisionRoadCount == 0) then
 			body1:setForce(ccp(0, 0))
-            if not jumping then
-                body1:setVelocity(0, -ROLE_FALL_SPEED)
-            end
             if roleState ~= ROLE_STATE_JUMP then
+                body1:setVelocity(0, -ROLE_FALL_SPEED)
                 roleState = ROLE_STATE_FALL
                 wudi = true
             end
@@ -837,10 +881,15 @@ function MainScene:onEnter()
     end)
 
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
+        print("add speed")
         MAP_MOVE_SPEED = MAP_MOVE_SPEED + SPEED_CHANGE_NUM
         self:calSpeed()
         for _, body in ipairs(self.mapBodys) do 
             body:setVelocity(-MAP_MOVE_SPEED, 0)           
+            body:setForce(0, -GRAVITY)           
+        end
+        if roleState == ROLE_STATE_ROAD then
+            self.roleBody:setForce(0, -GRAVITY) 
         end
         self.world:setGravity(0, GRAVITY)
     end, SPEED_CHANGE_TIME)
@@ -854,6 +903,8 @@ function MainScene:calSpeed()
     local time = (JUMP_GE_ZI_HOR * TILE_WIDTH) / MAP_MOVE_SPEED
     ROLE_JUMP_SPEED = 2 * (2 * (JUMP_GE_ZI_VER * TILE_WIDTH + 10) / time) 
     GRAVITY = - 2 * ROLE_JUMP_SPEED / time
+    --print("ROLE_JUMP_SPEED :", ROLE_JUMP_SPEED)
+    --print("GRAVITY :", GRAVITY)
 
     ROLE_FALL_SPEED = MAP_MOVE_SPEED
 end
