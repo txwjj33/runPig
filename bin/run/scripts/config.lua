@@ -9,8 +9,16 @@ ANDOIRD = false
 CHEAT_MODE = false
 
 --测试单个地图
-MAP_TEST = true
+MAP_TEST = false
 MAP_TEST_FILE = "levels/_test.tmx"
+
+MAPS_TEST = true
+MAP_TEST_FILES = 
+{
+    "levels/0_7_7_1.tmx",
+    "levels/1_7_10_1.tmx",
+    "levels/2_10_10_1.tmx",
+}
 
 --开启碰撞检测区域显示
 DEBUG_COLLSION = true
@@ -29,7 +37,7 @@ GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
 --地图最大速度和初始速度
 MAP_MOVE_SPEED_LIMIT = 830
-MAP_MOVE_SPEED_START = 500
+MAP_MOVE_SPEED_START = 800
 
 --跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7

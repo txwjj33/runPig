@@ -9,8 +9,7 @@
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "LuaTalkingData.h"
-#include "TDCCAccount.h"
-#include "TDCCTalkingDataGA.h"
+#include "TalkingData.h"
 #endif
 
 using namespace std;
@@ -52,7 +51,9 @@ bool AppDelegate::applicationDidFinishLaunching()
     pStack->loadChunksFromZIP("res/framework_precompiled.zip");
 
 	tolua_talkingdata_open(m_state);
-	TDCCAccount::setAccount(TDCCTalkingDataGA::getDeviceId());
+	CCLog("init talking data");
+	TDCCAccount* account = TDCCAccount::setAccount(TDCCTalkingDataGA::getDeviceId());
+	account->setAccountType(TDCCAccount::kAccountAnonymous);
 
     // set script path
     string path = CCFileUtils::sharedFileUtils()->fullPathForFilename("scripts/main.lua");

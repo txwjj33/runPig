@@ -117,7 +117,7 @@ function MainScene:ctor()
 	end
 
 	local oldMapWidth = self.m_pOldMap:getContentSize().width + startPos
-	print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
+	--print("width :%f, needTime: %f", oldMapWidth, oldMapWidth / MAP_MOVE_SPEED)
 	self.m_pNewMapBody = self:addMapBody(oldMapWidth)
 	self.m_pNewMap = self:addNewMap(oldMapWidth, self.m_pNewMapBody)
 
@@ -160,7 +160,7 @@ function MainScene:roleJump()
     self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
     self.roleBody:setForce(ccp(0, 0))
     self.pigAnimation:setAnimation(0, "jump", true)
-    print("jump speed: " .. ROLE_JUMP_SPEED)
+    --print("jump speed: " .. ROLE_JUMP_SPEED)
 
     --local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
     --print("time: " .. time)
@@ -359,11 +359,18 @@ local function getNums(path)
     return nums
 end
 
+MAP_INDEX = 1
 function MainScene:addNewMap(posX, body)
     mapPath = ""
 
     if MAP_TEST then
         mapPath = MAP_TEST_FILE
+    elseif MAPS_TEST then
+        mapPath = MAP_TEST_FILES[MAP_INDEX]
+        MAP_INDEX = MAP_INDEX + 1
+        if MAP_INDEX > #MAP_TEST_FILES then
+            MAP_INDEX = 1
+        end 
     else
         if firstLoadMap then
             mapPath = mapName[1]
@@ -388,13 +395,12 @@ function MainScene:addNewMap(posX, body)
             end
 
             local mapID = math.random(min, max)
-            print(mapID)
             mapPath = mapName[mapID]
-	        print("create new map: " .. mapPath)
             levelNums = getNums(mapPath)
         end
     end
 
+    print("create new map: " .. mapPath)
     local map = CCTMXTiledMap:create(mapPath)
 	map:setPosition(posX, 0)
     self:addChild(map)
@@ -447,7 +453,7 @@ function MainScene:addShapesAtPos(x, body, map)
 
                     local shape = addRoadShape(COLLISION_TYPE_ROAD,
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
+					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 5)
 
                     checkLeftRoad()
                     roadShapeTable[shape] = {}
@@ -457,7 +463,7 @@ function MainScene:addShapesAtPos(x, body, map)
                 elseif v == COLLISION_TYPE_ROAD then
                     local shape = addRoadShape(COLLISION_TYPE_ROAD,
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
-					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 1)
+					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 5)
 
                     checkLeftRoad()
                     roadShapeTable[shape] = {}
@@ -713,7 +719,7 @@ function MainScene:addBottomLineShape()
 end
 
 function MainScene:addRoleLineShape(collisionType, tileDisWithRole)
-    local width = 12
+    local width = 20
     local roleWallBody = self.world:createBoxBody(0, width, WIN_HEIGHT)
     roleWallBody:setPosition(rolePosX - TILE_WIDTH * tileDisWithRole - width / 2, WIN_HEIGHT / 2)
     roleWallBody:setCollisionType(collisionType)
@@ -805,7 +811,7 @@ function MainScene:onCollisionBegin(event)
         diamondScore = diamondScore + DIAMOND_SCORE
         diamondTable[shape2]:removeFromParent()
         body2:removeShape(shape2)
-        print("remove diamond")
+        --print("remove diamond")
     elseif collisionType == COLLISION_TYPE_BOTTOM_LINE 
         or collisionType == COLLISION_TYPE_ROAD_LEFT then
         self:gameOver()
@@ -867,6 +873,7 @@ end
 
 function MainScene:gameOver()
     --if CHEAT_MODE then return end
+    print("gameOver")
 
     isGameOver = true
 
@@ -902,7 +909,7 @@ function MainScene:onEnter()
     end)
 
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
-        print("add speed")
+        --print("add speed")
         self:calSpeed()
         for _, body in ipairs(self.mapBodys) do 
             body:setVelocity(-MAP_MOVE_SPEED, 0)           

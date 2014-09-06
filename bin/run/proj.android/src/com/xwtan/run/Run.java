@@ -69,8 +69,8 @@ public class Run extends Cocos2dxActivity {
 		
 		context = (Cocos2dxActivity) Cocos2dxActivity.getContext();
 		
-		TalkingDataGA.sPlatformType = TalkingDataGA.PLATFORM_TYPE_COCOS2DX;
-		TalkingDataGA.init(this, talkingDataAppID, talkingDataChannelID);
+		//TalkingDataGA.sPlatformType = TalkingDataGA.PLATFORM_TYPE_COCOS2DX;
+		//TalkingDataGA.init(this, talkingDataAppID, talkingDataChannelID);
 		
 //		AdManager.getInstance(this).init("6699b8ebfd92e055", "64956e39f0ed9461", true);
 //		SpotManager.getInstance(this).loadSpotAds();

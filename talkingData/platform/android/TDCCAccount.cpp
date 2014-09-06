@@ -46,6 +46,7 @@ TDCCAccount::~TDCCAccount() {
 }
 
 TDCCAccount* TDCCAccount::setAccount(const char* accountId) {
+	LOGW("setAccount: %s", accountId);
     if (NULL == accountId || strlen(accountId) == 0) {
         return NULL;
     }
