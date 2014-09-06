@@ -23,4 +23,11 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
+    
+    <style mce_bogus="1" name="AnimationActivity" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/push_down_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/push_down_in</item>
+        <item name="android:activityCloseEnterAnimation">@anim/push_down_out</item>
+        <item name="android:activityCloseExitAnimation">@anim/push_down_out</item>
+    </style>
 </resources>

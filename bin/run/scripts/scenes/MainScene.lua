@@ -903,6 +903,10 @@ end
 
 function MainScene:onEnter()
     self.world:start()
+
+    if ANDOIRD then
+        luaj.callStaticMethod("com/xwtan/run/Run", "showBannerStatic")
+    end
     
     self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
         self:update(dt)
