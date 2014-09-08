@@ -3,7 +3,7 @@
 DEBUG = 1
 DEBUG_FPS = true
 
-ANDOIRD = false
+ANDOIRD = true
 
 --开启以后所有仙人掌无效
 CHEAT_MODE = false
@@ -12,12 +12,19 @@ CHEAT_MODE = false
 MAP_TEST = false
 MAP_TEST_FILE = "levels/_test.tmx"
 
-MAPS_TEST = true
+MAPS_TEST = false
+--MAP_TEST_FILES = 
+--{
+--    "levels/0_7_7_1.tmx",
+--    "levels/1_7_10_1.tmx",
+--    "levels/2_10_10_1.tmx",
+--}
+
 MAP_TEST_FILES = 
 {
     "levels/0_7_7_1.tmx",
-    "levels/1_7_10_1.tmx",
-    "levels/2_10_10_1.tmx",
+    "levels/1_7_9_3.tmx",
+    "levels/2_9_9_1.tmx",
 }
 
 --开启碰撞检测区域显示
@@ -36,8 +43,8 @@ GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
 --地图最大速度和初始速度
-MAP_MOVE_SPEED_LIMIT = 830
-MAP_MOVE_SPEED_START = 800
+MAP_MOVE_SPEED_LIMIT = 730
+MAP_MOVE_SPEED_START = 700
 
 --跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7

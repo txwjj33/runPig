@@ -133,6 +133,7 @@ function MainScene:ctor()
         self:addCollisionToRoleScriptListener(v)
     end
     self:addCollisionToRoleScriptListener(COLLISION_TYPE_ROAD_LEFT)
+    self:addCollisionToRoleScriptListener(COLLISION_TYPE_ROAD_FIX)
 
     -- add debug node
     if DEBUG_COLLSION then
@@ -224,7 +225,7 @@ function MainScene:addYun()
 
     for k = 1, yunCount do
         self:addAYun(posX)
-        posX = posX + sYunWidth - 3
+        posX = posX + sYunWidth
     end
 end
 
@@ -610,7 +611,7 @@ function MainScene:removeOldCaodi()
     table.remove(self.caodiTable, 1)
 
     local lastCaodi = self.caodiTable[#self.caodiTable]
-    local pos = lastCaodi:getPositionX() + WIN_WIDTH - 3
+    local pos = lastCaodi:getPositionX() + WIN_WIDTH
 
     local caodi2 = cc.ui.UIImage.new("interface_caodi.png")
         :align(display.LEFT_BOTTOM, pos, 0)
@@ -627,7 +628,7 @@ function MainScene:removeOldYun()
     table.remove(self.yunsTable, 1)
 
     local lastYun = self.yunsTable[#self.yunsTable]
-    local pos = lastYun:getPositionX() + sYunWidth - 3
+    local pos = lastYun:getPositionX() + sYunWidth
     self:addAYun(pos)
 end
 
@@ -783,46 +784,63 @@ function MainScene:onCollisionBegin(event)
         return false
     end
 
-    local collisionType = shape2:getCollisionType()
-	--print("begin collision collision_type: " .. collisionType)
-	if (collisionType == COLLISION_TYPE_ROAD) then
-        if roleState ~= ROLE_STATE_ROAD then
-            self.pigAnimation:setAnimation(0, "run", true)
-            local x, y = body1:getPosition()
-            body1:setPosition(ccp(x, roadShapeTable[shape2].posY + roleHeight / 2))
+    if shape1:getCollisionType() == COLLISION_TYPE_ROLE then
+        if self.collisionLeft then 
+            self:gameOver()
+            return false
         end
 
-        wudi = false
-		self.collisionRoadCount = self.collisionRoadCount + 1
-        --print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
-		--¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
-        body1:setForce(ccp(0, -GRAVITY))
-        body1:setVelocity(ccp(0, 0))
+        local collisionType = shape2:getCollisionType()
+	    --print("begin collision collision_type: " .. collisionType)
+	    if (collisionType == COLLISION_TYPE_ROAD) then
+            if roleState ~= ROLE_STATE_ROAD then
+                self.pigAnimation:setAnimation(0, "run", true)
+                --local x, y = body1:getPosition()
+                --body1:setPosition(ccp(x, roadShapeTable[shape2].posY + roleHeight / 2))
+            end
 
-        roleState = ROLE_STATE_ROAD
-    elseif collisionType == COLLISION_TYPE_ROAD_TOP then
-        local vx, vy = body1:getVelocity()
-        print(vx .. vy)
-        if vy > 0 then
-            body1:setVelocity(vx, -JUMP_FAN_TAN_XI_SHU * vy)
-        end
-        --roleState = ROLE_STATE_COLLSION_TOP
-    elseif collisionType == COLLISION_TYPE_DIAMOND then
-        diamondScore = diamondScore + DIAMOND_SCORE
-        diamondTable[shape2]:removeFromParent()
-        body2:removeShape(shape2)
-        --print("remove diamond")
-    elseif collisionType == COLLISION_TYPE_BOTTOM_LINE 
-        or collisionType == COLLISION_TYPE_ROAD_LEFT then
-        self:gameOver()
-    else
-        if CHEAT_MODE or wudi then return false end
+            wudi = false
+		    self.collisionRoadCount = self.collisionRoadCount + 1
+            --print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
+		    --¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
+            body1:setForce(ccp(0, -GRAVITY))
+            body1:setVelocity(ccp(0, 0))
 
-        if stuckShapeTable[shape2] then
-            local map = body2:getNode()
-            body1:setPosition(ccpAdd(stuckShapeTable[shape2], ccp(map:getPosition())))
+            roleState = ROLE_STATE_ROAD
+        elseif collisionType == COLLISION_TYPE_ROAD_TOP then
+            local vx, vy = body1:getVelocity()
+            print(vx .. vy)
+            if vy > 0 then
+                body1:setVelocity(vx, -JUMP_FAN_TAN_XI_SHU * vy)
+            end
+            --roleState = ROLE_STATE_COLLSION_TOP
+        elseif collisionType == COLLISION_TYPE_DIAMOND then
+            diamondScore = diamondScore + DIAMOND_SCORE
+            diamondTable[shape2]:removeFromParent()
+            body2:removeShape(shape2)
+            --print("remove diamond")
+        elseif collisionType == COLLISION_TYPE_BOTTOM_LINE then
+            self:gameOver()
+        elseif collisionType == COLLISION_TYPE_ROAD_LEFT then
+            body1:setVelocity(-10, -100)
+            --body1:setVelocity(0, 0)
+            --body1:setForce(0, -GRAVITY)  
+            for _, body in ipairs(self.mapBodys) do 
+                body:setVelocity(0, 0)           
+                body:setForce(0, -GRAVITY)           
+            end
+            scheduler.unscheduleGlobal(self.updateSchedule)
+            scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+            self.collisionLeft = true
+        else
+            if CHEAT_MODE or wudi then return false end
+
+            if stuckShapeTable[shape2] then
+                local map = body2:getNode()
+                body1:setPosition(ccpAdd(stuckShapeTable[shape2], ccp(map:getPosition())))
+            end
+            self:gameOver()
         end
-        self:gameOver()
     end
 
     return false
@@ -896,7 +914,7 @@ function MainScene:gameOver()
 
     self:addGameOverButtons()
     if ANDOIRD then
-        luaj.callStaticMethod("com/xwtan/run/Run", "showSpotAd")
+        luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
         luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
     end
 end

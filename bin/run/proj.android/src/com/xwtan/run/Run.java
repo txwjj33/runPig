@@ -55,6 +55,8 @@ public class Run extends Cocos2dxActivity {
 	private static Handler handler;
 	private static RelativeLayout bannerLayout;
 	private AdsMogoLayout adView;
+	//private static String mogoAppid = "8f6c1a9a237a49c9bfd9c4dae5c192a2";
+	private static String mogoAppid = "93535c6092f543e8a257ee435a69da06";
 	
 	private static Cocos2dxActivity context;
 	
@@ -78,6 +80,7 @@ public class Run extends Cocos2dxActivity {
     protected void onDestroy() {
 		super.onDestroy();
 		AdsMogoLayout.clear();
+		//adsMogoLayoutCode.clearThread();
 		if (adView != null) {
 			adView.clearThread();
 		}
@@ -175,8 +178,8 @@ public class Run extends Cocos2dxActivity {
 		 * 初始化全插屏对象
 		 * 初始化之前必须设置默认的AppKey和Activity
 		 */
-		AdsMogoInterstitialManager.setDefaultInitAppKey("93535c6092f543e8a257ee435a69da06");
-		AdsMogoInterstitialManager.setInitActivity(Run.this);
+		AdsMogoInterstitialManager.setDefaultInitAppKey(mogoAppid);
+		AdsMogoInterstitialManager.setInitActivity(this);
 		AdsMogoInterstitialManager.shareInstance()
 				.initDefaultInterstitial();
 		
@@ -184,6 +187,12 @@ public class Run extends Cocos2dxActivity {
 		AdsMogoInterstitialManager.shareInstance()
 				.defaultInterstitial()
 				.setAdsMogoInterstitialListener(new AdsMogoInterstitialListener() {
+					
+//					@Override
+//					public void onInterstitialStartReady(String adName){
+//						// TODO Auto-generated method stub
+//						Log.e("MogoCocos2dx Demo", "onShowInterstitialScreen");
+//					}
 					
 					@Override
 					public void onShowInterstitialScreen(String arg0) {
@@ -241,6 +250,11 @@ public class Run extends Cocos2dxActivity {
 					public void onInitFinish() {
 						// TODO Auto-generated method stub
 						Log.e("MogoCocos2dx Demo", "onInterstitial  onInitFinish");
+//						if(AdsMogoInterstitialManager.shareInstance().containDefaultInterstitia())
+//						{ 
+//							AdsMogoInterstitialManager.shareInstance()
+//					                               .defaultInterstitial().refreshAd(); 
+//			            }
 					}
 				});
 		
@@ -260,7 +274,7 @@ public class Run extends Cocos2dxActivity {
 					*/
 					if (bannerLayout.getChildCount() == 0) {
 						adView = new AdsMogoLayout(Run.this,
-								"93535c6092f543e8a257ee435a69da06",false);
+								mogoAppid,false);
 						/***
 						 * 如果设置轮换方式为true,
 						 * 在芒果后台配置，需要把横幅刷新时间设置为禁用

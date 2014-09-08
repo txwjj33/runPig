@@ -399,9 +399,16 @@ void CCPhysicsWorld::step(float dt)
 
 void CCPhysicsWorld::update(float dt)
 {
-    //static float min = 1.0f / 30.f;
-    //if (dt < min) dt = min;
-    step(dt);
+    /*static float min = 1.0f / 30.f;
+    if (dt < min) dt = min;*/
+	int steps = 2;
+	float dtSpace = CCDirector::sharedDirector()->getAnimationInterval()/(float)steps;
+
+	for(int i = 0; i < steps; i++)
+	{
+		cpSpaceStep(m_space, dtSpace);
+	}
+    step(dtSpace);
 }
 
 void CCPhysicsWorld::onExit(void)
