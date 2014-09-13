@@ -10,6 +10,9 @@
     <Filter Include="sources\spine">
       <UniqueIdentifier>{bb0b8ab1-ae11-4759-a5d9-dd37e142404e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sources\C2DXShareSDK">
+      <UniqueIdentifier>{ddfd97d3-abec-46ee-b19b-b17bf3dec0d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -34,6 +37,12 @@
       <Filter>sources\spine</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\LuaSpine.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\C2DXShareSDK\C2DXShareSDK.cpp">
+      <Filter>sources\C2DXShareSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\LuaExport.cpp">
       <Filter>sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -66,6 +75,15 @@
       <Filter>sources\spine</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\LuaSpine.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\C2DXShareSDK\C2DXShareSDK.h">
+      <Filter>sources\C2DXShareSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\C2DXShareSDK\C2DXShareSDKTypeDef.h">
+      <Filter>sources\C2DXShareSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\LuaExport.h">
       <Filter>sources</Filter>
     </ClInclude>
   </ItemGroup>

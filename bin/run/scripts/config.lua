@@ -1,14 +1,14 @@
-
+﻿
 -- 0 - disable debug info, 1 - less debug info, 2 - verbose debug info
 DEBUG = 1
 DEBUG_FPS = true
 
-ANDOIRD = true
+ANDOIRD = false
 
---�����Ժ�������������Ч
+--开启以后所有仙人掌无效
 CHEAT_MODE = false
 
---���Ե�����ͼ
+--测试单个地图
 MAP_TEST = false
 MAP_TEST_FILE = "levels/_test.tmx"
 
@@ -27,7 +27,7 @@ MAP_TEST_FILES =
     "levels/2_9_9_1.tmx",
 }
 
---������ײ���������ʾ
+--开启碰撞检测区域显示
 DEBUG_COLLSION = true
 
 math.randomseed(os.time())
@@ -42,47 +42,50 @@ CONFIG_SCREEN_HEIGHT = 720
 GAME_TEXTURE_DATA_FILENAME  = "AllSprites.plist"
 GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 
---��ͼ����ٶȺͳ�ʼ�ٶ�
+--地图最大速度和初始速度
 MAP_MOVE_SPEED_LIMIT = 730
-MAP_MOVE_SPEED_START = 700
+MAP_MOVE_SPEED_START = 480
 
---��Ծ��ˮƽ����ʹ�ֱ���루��������
+--跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7
 JUMP_GE_ZI_VER = 3
---��Ծ�Ĵ�ֱ�Ķ�������
+--跳跃的垂直的多余像素
 JUMP_XIANG_SU_VER = 10
---����������Ӻ󷴵��ٶ�ϵ��
+--碰到上面格子后反弹速度系数
 JUMP_FAN_TAN_XI_SHU = 0.1
 
---����ģʽ�����restart�Ժ󸴻�
---�����⣬��δʹ��
+--作弊模式，点击restart以后复活
+--有问题，暂未使用
 --CHEATING_MODE = false 
 
---�ٶȸı�ļ��
+--速度改变的间隔
 SPEED_CHANGE_TIME = 5
---�ٶȸı������
+--速度改变的增加
 SPEED_CHANGE_NUM = 10
 
---��һ���ϰ�������Ķ���Ԥ������ײ����
+--第一个障碍物上面的顶点预留的碰撞像素
 STUCK_TOP_JULI = 18
+--小猪碰撞体积的参数
+ROLE_HOR_XIANG_SU = 5   --左右遗留像素
+ROLE_VER_XIANG_SU = 5   --上下遗留像素
 
---С����ʼλ�ã������ϵĸ�������
+--小猪初始位置（离左上的格子数）
 ROLE_POS_X = 5
 ROLE_POS_Y = 3
 
---ͬʱ��ʾ���е���ײ��״
+--同时显示几列的碰撞形状
 ROAD_SHAPE_NUM = 5
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
 
---��ʯ����
+--钻石分数
 DIAMOND_SCORE = 100
 
---�ؿ����ֵ
+--关卡最大值
 LEVEL_MAX = 7
 
---�����µĵ�ͼ�����ڼ���ͼ
+--加入新的地图后用于检查地图
 checkMap = false
 if checkMap then
 

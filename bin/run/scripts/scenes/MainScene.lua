@@ -1,4 +1,4 @@
-local scheduler = require("framework.scheduler")
+﻿local scheduler = require("framework.scheduler")
 if ANDOIRD then
     local scheduler = require("framework.luaj")
 end
@@ -152,11 +152,13 @@ function MainScene:ctor()
     self.baseLayer = baseLayer
 
     self:addButtons()
+    self:playMusic("sounds/start.ogg")
 end
 
 function MainScene:roleJump()
     --jumping = true
     roleState = ROLE_STATE_JUMP
+    self:playSound("sounds/jump.ogg")
 
     self.roleBody:setVelocity(ccp(0, ROLE_JUMP_SPEED))
     self.roleBody:setForce(ccp(0, 0))
@@ -274,6 +276,7 @@ function MainScene:addButtons()
     local showSetting = false
 
     local function updateCheckBoxButton(checkbox, confStr)
+        self:playSound("sounds/button.ogg")
         if checkbox:isButtonSelected() then
             CCUserDefault:sharedUserDefault():setBoolForKey(confStr, true)
         else
@@ -323,6 +326,7 @@ end
 
 function MainScene:addGameOverButtons()
     local function click()
+        self:playSound("sounds/button.ogg")
         if CHEATING_MODE then
             self:fuhuo()
         else
@@ -675,14 +679,14 @@ function MainScene:createRole()
 	--vexArray:add(ccp(  roleSize.width / 2, - roleSize.height / 2))
 
     local vexArray = CCPointArray:create(8)
-    vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 4))
-	vexArray:add(ccp(- roleSize.width / 2,   roleSize.height / 4))
-	vexArray:add(ccp(- roleSize.width / 4,   roleSize.height / 2))
-	vexArray:add(ccp(  roleSize.width / 4,   roleSize.height / 2))
-    vexArray:add(ccp(  roleSize.width / 2,   roleSize.height / 4))
-	vexArray:add(ccp(  roleSize.width / 2, - roleSize.height / 4))
-	vexArray:add(ccp(  roleSize.width / 4, - roleSize.height / 2))
-	vexArray:add(ccp( -roleSize.width / 4, - roleSize.height / 2))
+    vexArray:add(ccp(- roleSize.width / 2 + ROLE_HOR_XIANG_SU, - roleSize.height / 4))
+	vexArray:add(ccp(- roleSize.width / 2 + ROLE_HOR_XIANG_SU,   roleSize.height / 4))
+	vexArray:add(ccp(- roleSize.width / 4,   roleSize.height / 2 - ROLE_VER_XIANG_SU))
+	vexArray:add(ccp(  roleSize.width / 4,   roleSize.height / 2 - ROLE_VER_XIANG_SU))
+    vexArray:add(ccp(  roleSize.width / 2 - ROLE_HOR_XIANG_SU,   roleSize.height / 4))
+	vexArray:add(ccp(  roleSize.width / 2 - ROLE_HOR_XIANG_SU, - roleSize.height / 4))
+	vexArray:add(ccp(  roleSize.width / 4, - roleSize.height / 2 + ROLE_VER_XIANG_SU))
+	vexArray:add(ccp( -roleSize.width / 4, - roleSize.height / 2 + ROLE_VER_XIANG_SU))
 
 	local roleBody = self.world:createPolygonBody(1, vexArray)
     roleBody:setCollisionType(COLLISION_TYPE_ROLE)
@@ -818,20 +822,26 @@ function MainScene:onCollisionBegin(event)
             diamondScore = diamondScore + DIAMOND_SCORE
             diamondTable[shape2]:removeFromParent()
             body2:removeShape(shape2)
+            self:playSound("sounds/diamond.ogg")
             --print("remove diamond")
         elseif collisionType == COLLISION_TYPE_BOTTOM_LINE then
             self:gameOver()
         elseif collisionType == COLLISION_TYPE_ROAD_LEFT then
-            body1:setVelocity(-10, -100)
-            --body1:setVelocity(0, 0)
-            --body1:setForce(0, -GRAVITY)  
-            for _, body in ipairs(self.mapBodys) do 
-                body:setVelocity(0, 0)           
-                body:setForce(0, -GRAVITY)           
+            self:playSound("sounds/left_road.ogg")
+            if roleState ~= ROLE_STATE_ROAD then
+                body1:setVelocity(-10, -100)
+                --body1:setVelocity(0, 0)
+                --body1:setForce(0, -GRAVITY)  
+                for _, body in ipairs(self.mapBodys) do 
+                    body:setVelocity(0, 0)           
+                    body:setForce(0, -GRAVITY)           
+                end
+                scheduler.unscheduleGlobal(self.updateSchedule)
+                scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+                self.collisionLeft = true
+            else
+                self:gameOver()
             end
-            scheduler.unscheduleGlobal(self.updateSchedule)
-            scheduler.unscheduleGlobal(self.updateSpeedSchedule)
-            self.collisionLeft = true
         else
             if CHEAT_MODE or wudi then return false end
 
@@ -839,6 +849,7 @@ function MainScene:onCollisionBegin(event)
                 local map = body2:getNode()
                 body1:setPosition(ccpAdd(stuckShapeTable[shape2], ccp(map:getPosition())))
             end
+            self:playSound("sounds/truck.ogg")
             self:gameOver()
         end
     end
@@ -913,6 +924,7 @@ function MainScene:gameOver()
     end
 
     self:addGameOverButtons()
+    LuaExport:showShareMenu("11", "11", "11", "11", "11")
     if ANDOIRD then
         luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
         luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
@@ -973,7 +985,7 @@ function MainScene:playMusic(filename)
     end
 end
 
-function MainScene:playSound()
+function MainScene:playSound(filename)
     if CCUserDefault:sharedUserDefault():getBoolForKey(STRING_MUSIC, true) then
         audio.playSound(filename)
     end

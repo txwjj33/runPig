@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\AppDelegate.cpp" />
+    <ClCompile Include="..\sources\C2DXShareSDK\C2DXShareSDK.cpp" />
+    <ClCompile Include="..\sources\LuaExport.cpp" />
     <ClCompile Include="..\sources\LuaSpine.cpp" />
     <ClCompile Include="..\sources\spine\PolygonBatch.cpp" />
     <ClCompile Include="..\sources\spine\SkeletonAnimation.cpp" />
@@ -22,6 +24,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\AppDelegate.h" />
+    <ClInclude Include="..\sources\C2DXShareSDK\C2DXShareSDK.h" />
+    <ClInclude Include="..\sources\C2DXShareSDK\C2DXShareSDKTypeDef.h" />
+    <ClInclude Include="..\sources\LuaExport.h" />
     <ClInclude Include="..\sources\LuaSpine.h" />
     <ClInclude Include="..\sources\spine\PolygonBatch.h" />
     <ClInclude Include="..\sources\spine\SkeletonAnimation.h" />

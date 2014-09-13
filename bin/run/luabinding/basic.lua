@@ -102,6 +102,7 @@ extern "C" {
 #include "spine/SkeletonAnimation.h"
 #include <spine/spine.h>
 #include "LuaSpine.h"
+#include "LuaExport.h"
 
 using namespace spine;
 using namespace cocos2d;

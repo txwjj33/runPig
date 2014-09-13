@@ -12,6 +12,11 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
     ../../sources/AppDelegate.cpp \
     ../../sources/LuaSpine.cpp \
     ../../sources/LuaTalkingData.cpp \
+    ../../sources/LuaExport.cpp \
+    ../../sources/C2DXShareSDK/C2DXShareSDK.cpp \
+    ../../sources/C2DXShareSDK/Android/ShareSDKUtils.cpp \
+    ../../sources/C2DXShareSDK/Android/JSON/CCJSONConverter.cpp \
+    ../../sources/C2DXShareSDK/Android/JSON/cJSON/cJSON.c \
     ../../sources/spine/PolygonBatch.cpp \
     ../../sources/spine/SkeletonAnimation.cpp \
     ../../sources/spine/SkeletonRenderer.cpp \
@@ -42,6 +47,10 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
     ../../spine-c/src/spine/SlotData.c
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../sources \
+$(LOCAL_PATH)/../../sources/C2DXShareSDK \
+$(LOCAL_PATH)/../../sources/C2DXShareSDK/Android \
+$(LOCAL_PATH)/../../sources/C2DXShareSDK/Android/JSON \
+$(LOCAL_PATH)/../../sources/C2DXShareSDK/Android/JSON/cJSON \
 $(LOCAL_PATH)/../../spine-c/include \
 $(COCOS2DX_PATH)/../../talkingData \
 $(COCOS2DX_PATH)/../../talkingData/platform/android

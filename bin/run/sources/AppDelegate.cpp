@@ -6,15 +6,19 @@
 #include "CCLuaEngine.h"
 #include <string>
 #include "LuaSpine.h"
+#include "C2DXShareSDK/C2DXShareSDK.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "LuaTalkingData.h"
 #include "TalkingData.h"
 #endif
 
+static const string shareAppKey = "27707843bfb0";
+
 using namespace std;
 using namespace cocos2d;
 using namespace CocosDenshion;
+using namespace cn::sharesdk;
 
 AppDelegate::AppDelegate()
 {
@@ -28,8 +32,73 @@ AppDelegate::~AppDelegate()
     SimpleAudioEngine::sharedEngine()->end();
 }
 
+void authResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDictionary *error)
+{
+	switch (state) {
+	case C2DXResponseStateSuccess:
+		CCLog("授权成功");
+		break;
+	case C2DXResponseStateFail:
+		CCLog("授权失败");
+		break;
+	default:
+		break;
+	}
+}
+
+void getUserResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDictionary *userInfo, CCDictionary *error)
+{
+	if (state == C2DXResponseStateSuccess)
+	{
+		//输出用户信息
+		CCArray *allKeys = userInfo -> allKeys();
+		for (int i = 0; i < allKeys -> count(); i++)
+		{
+			CCString *key = (CCString *)allKeys -> objectAtIndex(i);
+			CCObject *obj = userInfo -> objectForKey(key -> getCString());
+
+			CCLog("key = %s", key -> getCString());
+			if (dynamic_cast<CCString *>(obj))
+			{
+				CCLog("value = %s", dynamic_cast<CCString *>(obj) -> getCString());
+			}
+			else if (dynamic_cast<CCInteger *>(obj))
+			{
+				CCLog("value = %d", dynamic_cast<CCInteger *>(obj) -> getValue());
+			}
+			else if (dynamic_cast<CCDouble *>(obj))
+			{
+				CCLog("value = %f", dynamic_cast<CCDouble *>(obj) -> getValue());
+			}
+		}
+	}
+}
+
 bool AppDelegate::applicationDidFinishLaunching()
 {
+	 /**
+     注册SDK应用，此应用请到http://mob.com/中进行注册申请。
+     此方法必须在启动时调用，否则会限制SDK的使用。
+     **/
+     C2DXShareSDK::open(CCString::create(shareAppKey), false);
+                /**
+     连接新浪微博开放平台应用以使用相关功能，此应用需要引用SinaWeiboConnection.framework
+     http://open.weibo.com上注册新浪微博开放平台应用，并将相关信息填写到以下字段
+    **/ 
+    CCDictionary *sinaConfigDict = CCDictionary::create();
+    sinaConfigDict -> setObject(CCString::create("568898243"), "app_key");
+    sinaConfigDict -> setObject(CCString::create("38a4f8204cc784f81f9f0daaf31e02e3"), "app_secret");
+    sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
+    C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSinaWeibo, sinaConfigDict);
+
+	C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
+	C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
+	C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);
+
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeSinaWeibo, getUserResultHandler);
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiSession, getUserResultHandler);
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiTimeline, getUserResultHandler);
+
     // initialize director
     CCDirector *pDirector = CCDirector::sharedDirector();
     pDirector->setOpenGLView(CCEGLView::sharedOpenGLView());

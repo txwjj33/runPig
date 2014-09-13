@@ -1,5 +1,6 @@
 
 $pfile "spine/spine.tolua"
+$pfile "LuaExport.tolua"
 
 $[
 

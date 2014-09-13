@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spine
-** Generated automatically by tolua++-1.0.92 on 08/06/14 23:51:46.
+** Generated automatically by tolua++-1.0.92 on 09/13/14 17:09:30.
 */
 
 /****************************************************************************
@@ -40,6 +40,7 @@ extern "C" {
 #include "spine/SkeletonAnimation.h"
 #include <spine/spine.h>
 #include "LuaSpine.h"
+#include "LuaExport.h"
 
 using namespace spine;
 using namespace cocos2d;
@@ -79,6 +80,8 @@ static int tolua_collect_SkeletonAnimation (lua_State* tolua_S)
 /* function to register type */
 static void tolua_reg_types (lua_State* tolua_S)
 {
+ tolua_usertype(tolua_S,"LuaExport");
+ toluafix_add_type_mapping(CLASS_HASH_CODE(typeid(LuaExport)), "LuaExport");
  tolua_usertype(tolua_S,"spEventType");
  toluafix_add_type_mapping(CLASS_HASH_CODE(typeid(spEventType)), "spEventType");
  tolua_usertype(tolua_S,"spSlot");
@@ -1789,6 +1792,43 @@ static int tolua_spine_SkeletonAnimation_isPlayAnimation00(lua_State* tolua_S)
 }
 #endif //#ifndef TOLUA_DISABLE
 
+/* method: showShareMenu of class  LuaExport */
+#ifndef TOLUA_DISABLE_tolua_spine_LuaExport_showShareMenu00
+static int tolua_spine_LuaExport_showShareMenu00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+ tolua_Error tolua_err;
+ if (
+     !tolua_isusertable(tolua_S,1,"LuaExport",0,&tolua_err) ||
+     !tolua_isstring(tolua_S,2,0,&tolua_err) ||
+     !tolua_isstring(tolua_S,3,0,&tolua_err) ||
+     !tolua_isstring(tolua_S,4,0,&tolua_err) ||
+     !tolua_isstring(tolua_S,5,0,&tolua_err) ||
+     !tolua_isstring(tolua_S,6,0,&tolua_err) ||
+     !tolua_isnoobj(tolua_S,7,&tolua_err)
+ )
+  goto tolua_lerror;
+ else
+#endif
+ {
+  const char* content = ((const char*)  tolua_tostring(tolua_S,2,0));
+  const char* image = ((const char*)  tolua_tostring(tolua_S,3,0));
+  const char* title = ((const char*)  tolua_tostring(tolua_S,4,0));
+  const char* des = ((const char*)  tolua_tostring(tolua_S,5,0));
+  const char* url = ((const char*)  tolua_tostring(tolua_S,6,0));
+  {
+   LuaExport::showShareMenu(content,image,title,des,url);
+  }
+ }
+ return 0;
+#ifndef TOLUA_RELEASE
+ tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'showShareMenu'.",&tolua_err);
+ return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
 /* Open function */
 TOLUA_API int tolua_spine_open (lua_State* tolua_S)
 {
@@ -1867,6 +1907,10 @@ TOLUA_API int tolua_spine_open (lua_State* tolua_S)
    tolua_function(tolua_S,"onAnimationStateEvent",tolua_spine_SkeletonAnimation_onAnimationStateEvent00);
    tolua_function(tolua_S,"onTrackEntryEvent",tolua_spine_SkeletonAnimation_onTrackEntryEvent00);
    tolua_function(tolua_S,"isPlayAnimation",tolua_spine_SkeletonAnimation_isPlayAnimation00);
+  tolua_endmodule(tolua_S);
+  tolua_cclass(tolua_S,"LuaExport","LuaExport","",NULL);
+  tolua_beginmodule(tolua_S,"LuaExport");
+   tolua_function(tolua_S,"showShareMenu",tolua_spine_LuaExport_showShareMenu00);
   tolua_endmodule(tolua_S);
 
   { /* begin embedded lua code */

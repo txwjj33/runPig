@@ -26,6 +26,8 @@ package com.xwtan.run;
 import org.cocos2dx.lib.Cocos2dxActivity;
 import org.cocos2dx.lib.Cocos2dxHelper;
 
+import cn.sharesdk.ShareSDKUtils;
+
 import com.adsmogo.adapters.AdsMogoCustomEventPlatformEnum;
 import com.adsmogo.adview.AdsMogoLayout;
 import com.adsmogo.controller.listener.AdsMogoListener;
@@ -74,6 +76,8 @@ public class Run extends Cocos2dxActivity {
 		
 		context = (Cocos2dxActivity) Cocos2dxActivity.getContext();
 		
+		ShareSDKUtils.prepare();
+		
 	}
 
 	@Override
@@ -104,7 +108,7 @@ public class Run extends Cocos2dxActivity {
 
     public static void vibrate() {
         final Vibrator vib = (Vibrator) sInstance.getSystemService(Context.VIBRATOR_SERVICE);
-        vib.vibrate(1000);
+        vib.vibrate(500);
     }
     
     //芒果广告香瓜
