@@ -71,7 +71,7 @@ ROLE_VER_XIANG_SU = 5   --上下遗留像素
 
 --小猪初始位置（离左上的格子数）
 ROLE_POS_X = 5
-ROLE_POS_Y = 3
+ROLE_POS_Y = 5
 
 --同时显示几列的碰撞形状
 ROAD_SHAPE_NUM = 5

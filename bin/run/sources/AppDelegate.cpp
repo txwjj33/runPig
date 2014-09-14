@@ -91,6 +91,11 @@ bool AppDelegate::applicationDidFinishLaunching()
     sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
     C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSinaWeibo, sinaConfigDict);
 
+	CCDictionary *weixinConfigDict = CCDictionary::create();
+	weixinConfigDict -> setObject(CCString::create("568898243"), "app_id");
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiSession, weixinConfigDict);
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, weixinConfigDict);
+
 	C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
 	C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
 	C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);

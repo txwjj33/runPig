@@ -51,7 +51,6 @@ local font = "AGENTORANGE.ttf"
 local levelNums = {0, 7, 7, 1}
 local firstLoadMap = true
 
-
 local score = 0
 local diamondScore = 0
 local maxScore = 0
@@ -145,14 +144,49 @@ function MainScene:ctor()
 	baseLayer:setTouchEnabled(true)
     self:addChild(baseLayer)
     baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
-        if (self.collisionRoadCount > 0) then
-            self:roleJump()
+        if not self.started then
+            self.started = true
+            self:startGame()
+        else
+            if (self.collisionRoadCount > 0) then
+                self:roleJump()
+            end
         end
     end)
     self.baseLayer = baseLayer
 
+    self.startLayerNode = CCNode:create()
+    self:addChild(self.startLayerNode)
     self:addButtons()
+    cc.ui.UIImage.new("interface_dianjikaishi.png")
+        :align(display.CENTER, CONFIG_SCREEN_WIDTH / 2, 494)
+        :addTo(self.startLayerNode)
+
     self:playMusic("sounds/start.ogg")
+end
+
+function MainScene:startGame()
+    self.world:start()
+    
+    self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
+        self:update(dt)
+    end)
+
+    self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
+        --print("add speed")
+        self:calSpeed()
+        for _, body in ipairs(self.mapBodys) do 
+            body:setVelocity(-MAP_MOVE_SPEED, 0)           
+            body:setForce(0, -GRAVITY)           
+        end
+        if roleState == ROLE_STATE_ROAD then
+            self.roleBody:setForce(0, -GRAVITY) 
+        end
+        self.world:setGravity(0, GRAVITY)
+    end, SPEED_CHANGE_TIME)
+
+    self.startLayerNode:setVisible(false)
+    self.pigAnimation:setAnimation(0, "run", true)
 end
 
 function MainScene:roleJump()
@@ -264,9 +298,9 @@ function MainScene:addLabel()
     self.maxScoreLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(self.maxScoreLabel)
 
-    local bestLabel = CCLabelTTF:create("Best", font, fontSize)
+    local bestLabel = CCLabelTTF:create("最高分", font, fontSize)
     bestLabel:setColor(ccc3(255,232,111))
-    bestLabel:setPosition(1019, height)
+    bestLabel:setPosition(1049, height)
     bestLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(bestLabel)
 end
@@ -289,28 +323,29 @@ function MainScene:addButtons()
 
     cc.ui.UIImage.new(musicImg.on)
         :align(display.CENTER, 75, height)
-        :addTo(self)
+        :addTo(self.startLayerNode)
     checkBoxMusic = cc.ui.UICheckBoxButton.new(musicImg)
         :onButtonStateChanged(function(event)
             updateCheckBoxButton(event.target, STRING_MUSIC)
         end)
         :align(display.CENTER, 75, height)
-        :addTo(self)
+        :addTo(self.startLayerNode)
         :setButtonSelected(CCUserDefault:sharedUserDefault():getBoolForKey(STRING_MUSIC, true))
 
     cc.ui.UIImage.new(zhendongImg.on)
         :align(display.CENTER, 200, height)
-        :addTo(self)
+        :addTo(self.startLayerNode)
     zhendongMusic = cc.ui.UICheckBoxButton.new(zhendongImg)
         :onButtonStateChanged(function(event)
             updateCheckBoxButton(event.target, STRING_ZHEN_DONG)
         end)
         :align(display.CENTER, 200, height)
-        :addTo(self)
+        :addTo(self.startLayerNode)
         :setButtonSelected(CCUserDefault:sharedUserDefault():getBoolForKey(STRING_ZHEN_DONG, true))
 end
 
-function MainScene:addAButton(img, clickCallback, pos)
+function MainScene:addAButton(img, clickCallback, pos, anchor)
+    local pAnchor = anchor or display.CENTER
     local btn = cc.ui.UIPushButton.new(img)
         :onButtonPressed(function(event)
             event.target:setScale(1.2)
@@ -319,13 +354,42 @@ function MainScene:addAButton(img, clickCallback, pos)
             event.target:setScale(1.0)
         end)
         :onButtonClicked(clickCallback)
-        :align(display.CENTER, pos.x, pos.y)
+        :align(pAnchor, pos.x, pos.y)
         :addTo(self)
     return btn
 end
 
 function MainScene:addGameOverButtons()
-    local function click()
+    local fontSize = 50
+
+    cc.ui.UIImage.new("interface_youxijieshu.png")
+        :align(display.CENTER, WIN_WIDTH / 2, 607)
+        :addTo(self)
+
+    local bg = CCScale9Sprite:create("interface_diguang.png", CCRect(0, 0, 66, 51), CCRect(30, 25, 2, 2))
+    bg:setContentSize(CCSize(410, 300))
+    bg:setPosition(WIN_WIDTH / 2, 400)
+    self:addChild(bg)
+
+    cc.ui.UIImage.new("interface_fengshu.png")
+        :align(display.CENTER, WIN_WIDTH / 2, 500)
+        :addTo(self)
+
+    local scoreLabel = CCLabelTTF:create(tostring(score), font, fontSize)
+    scoreLabel:setColor(ccc3(255,254,219))
+    scoreLabel:setPosition(WIN_WIDTH / 2, 435)
+    self:addChild(scoreLabel)
+
+    cc.ui.UIImage.new("interface_zuigaofeng.png")
+        :align(display.CENTER, WIN_WIDTH / 2, 366)
+        :addTo(self)
+
+    local maxScoreLabel = CCLabelTTF:create(tostring(maxScore), font, fontSize)
+    maxScoreLabel:setColor(ccc3(255,254,219))
+    maxScoreLabel:setPosition(WIN_WIDTH / 2, 300)
+    self:addChild(maxScoreLabel)
+
+    local function clickTryAgain()
         self:playSound("sounds/button.ogg")
         if CHEATING_MODE then
             self:fuhuo()
@@ -334,8 +398,13 @@ function MainScene:addGameOverButtons()
             display.replaceScene(require("scenes.MainScene").new())
         end
     end
+    self:addAButton("button_zailaiyici.png", clickTryAgain, ccp(WIN_WIDTH / 2 - 33, 160), display.CENTER_RIGHT)
 
-    self:addAButton("button_try-again_02.png", click, ccp(WIN_WIDTH / 2, WIN_HEIGHT / 2))
+    local function clickShare()
+        self:playSound("sounds/button.ogg")
+        LuaExport:showShareMenu("content", "image", "title", "des", "url")
+    end
+    self:addAButton("button_fenxiang.png", clickShare, ccp(WIN_WIDTH / 2 + 33, 160), display.CENTER_LEFT)
 end
 
 function MainScene:fuhuo()
@@ -656,18 +725,16 @@ function MainScene:createRole()
 	local layer = self.m_pOldMap:layerNamed("road1")
 	local tilePos = layer:positionAt(ccp(ROLE_POS_X, ROLE_POS_Y))
     rolePosX = tilePos.x
-
-	local role = display.newSprite("zhuti_zhu.png")
-    self:addChild(role)
     
     self.pigAnimation = SkeletonAnimation:createWithFile("pig/skeleton.json", "pig/skeleton.atlas", 1)
-    self.pigAnimation:setAnimation(0, "run", true)
     self:addChild(self.pigAnimation)
 
 	--roleSize = role:getContentSize()
 	roleSize = self.m_pOldMap:getTileSize()
     roleHeight = roleSize.height
 	local rolePos = ccpAdd(tilePos, ccp(roleSize.width / 2, roleSize.height / 2))
+
+    self.pigAnimation:setPosition(rolePos)
 
     self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
     self.pigAnimation:setContentSize(roleSize)
@@ -924,7 +991,7 @@ function MainScene:gameOver()
     end
 
     self:addGameOverButtons()
-    LuaExport:showShareMenu("11", "11", "11", "11", "11")
+    
     if ANDOIRD then
         luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
         luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
@@ -932,28 +999,9 @@ function MainScene:gameOver()
 end
 
 function MainScene:onEnter()
-    self.world:start()
-
     if ANDOIRD then
         luaj.callStaticMethod("com/xwtan/run/Run", "showBannerStatic")
     end
-    
-    self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
-        self:update(dt)
-    end)
-
-    self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
-        --print("add speed")
-        self:calSpeed()
-        for _, body in ipairs(self.mapBodys) do 
-            body:setVelocity(-MAP_MOVE_SPEED, 0)           
-            body:setForce(0, -GRAVITY)           
-        end
-        if roleState == ROLE_STATE_ROAD then
-            self.roleBody:setForce(0, -GRAVITY) 
-        end
-        self.world:setGravity(0, GRAVITY)
-    end, SPEED_CHANGE_TIME)
 end
 
 function MainScene:onExit()
