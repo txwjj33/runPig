@@ -85,7 +85,7 @@ bool AppDelegate::applicationDidFinishLaunching()
      连接新浪微博开放平台应用以使用相关功能，此应用需要引用SinaWeiboConnection.framework
      http://open.weibo.com上注册新浪微博开放平台应用，并将相关信息填写到以下字段
     **/ 
-    CCDictionary *sinaConfigDict = CCDictionary::create();
+   /* CCDictionary *sinaConfigDict = CCDictionary::create();
     sinaConfigDict -> setObject(CCString::create("568898243"), "app_key");
     sinaConfigDict -> setObject(CCString::create("38a4f8204cc784f81f9f0daaf31e02e3"), "app_secret");
     sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
@@ -94,7 +94,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 	CCDictionary *weixinConfigDict = CCDictionary::create();
 	weixinConfigDict -> setObject(CCString::create("568898243"), "app_id");
 	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiSession, weixinConfigDict);
-	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, weixinConfigDict);
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, weixinConfigDict);*/
 
 	C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
 	C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);

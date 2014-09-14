@@ -187,6 +187,8 @@ function MainScene:startGame()
 
     self.startLayerNode:setVisible(false)
     self.pigAnimation:setAnimation(0, "run", true)
+
+    self.callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
 end
 
 function MainScene:roleJump()
@@ -310,12 +312,22 @@ function MainScene:addButtons()
     local showSetting = false
 
     local function updateCheckBoxButton(checkbox, confStr)
-        self:playSound("sounds/button.ogg")
         if checkbox:isButtonSelected() then
             CCUserDefault:sharedUserDefault():setBoolForKey(confStr, true)
+            if confStr == STRING_MUSIC then
+                self:playMusic("sounds/start.ogg")
+            else
+                if ANDOIRD then
+                    luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
+                end
+            end
         else
             CCUserDefault:sharedUserDefault():setBoolForKey(confStr, false)
+            if confStr == STRING_MUSIC then
+                audio.stopMusic()
+            end
         end
+        self:playSound("sounds/button.ogg")
     end
 
     musicImg = {on = "button_yinxiao.png", off = "button_off.png"}
@@ -1036,6 +1048,12 @@ end
 function MainScene:playSound(filename)
     if CCUserDefault:sharedUserDefault():getBoolForKey(STRING_MUSIC, true) then
         audio.playSound(filename)
+    end
+end
+
+function MainScene:callJavaFunc(className, methodName, args, sig)
+    if ANDOIRD then
+        luaj.callStaticMethod(className, methodName, args, sig)
     end
 end
 
