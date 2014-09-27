@@ -36,10 +36,10 @@ void authResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDiction
 {
 	switch (state) {
 	case C2DXResponseStateSuccess:
-		CCLog("ÊÚÈ¨³É¹¦");
+		CCLog("æŽˆæƒæˆåŠŸ");
 		break;
 	case C2DXResponseStateFail:
-		CCLog("ÊÚÈ¨Ê§°Ü");
+		CCLog("æŽˆæƒå¤±è´¥");
 		break;
 	default:
 		break;
@@ -50,7 +50,7 @@ void getUserResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDict
 {
 	if (state == C2DXResponseStateSuccess)
 	{
-		//Êä³öÓÃ»§ÐÅÏ¢
+		//è¾“å‡ºç”¨æˆ·ä¿¡æ¯
 		CCArray *allKeys = userInfo -> allKeys();
 		for (int i = 0; i < allKeys -> count(); i++)
 		{
@@ -77,32 +77,21 @@ void getUserResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDict
 bool AppDelegate::applicationDidFinishLaunching()
 {
 	 /**
-     ×¢²áSDKÓ¦ÓÃ£¬´ËÓ¦ÓÃÇëµ½http://mob.com/ÖÐ½øÐÐ×¢²áÉêÇë¡£
-     ´Ë·½·¨±ØÐëÔÚÆô¶¯Ê±µ÷ÓÃ£¬·ñÔò»áÏÞÖÆSDKµÄÊ¹ÓÃ¡£
+     æ³¨å†ŒSDKåº”ç”¨ï¼Œæ­¤åº”ç”¨è¯·åˆ°http://mob.com/ä¸­è¿›è¡Œæ³¨å†Œç”³è¯·ã€‚
+     æ­¤æ–¹æ³•å¿…é¡»åœ¨å¯åŠ¨æ—¶è°ƒç”¨ï¼Œå¦åˆ™ä¼šé™åˆ¶SDKçš„ä½¿ç”¨ã€‚
      **/
      C2DXShareSDK::open(CCString::create(shareAppKey), false);
-                /**
-     Á¬½ÓÐÂÀËÎ¢²©¿ª·ÅÆ½Ì¨Ó¦ÓÃÒÔÊ¹ÓÃÏà¹Ø¹¦ÄÜ£¬´ËÓ¦ÓÃÐèÒªÒýÓÃSinaWeiboConnection.framework
-     http://open.weibo.comÉÏ×¢²áÐÂÀËÎ¢²©¿ª·ÅÆ½Ì¨Ó¦ÓÃ£¬²¢½«Ïà¹ØÐÅÏ¢ÌîÐ´µ½ÒÔÏÂ×Ö¶Î
-    **/ 
-   /* CCDictionary *sinaConfigDict = CCDictionary::create();
-    sinaConfigDict -> setObject(CCString::create("568898243"), "app_key");
-    sinaConfigDict -> setObject(CCString::create("38a4f8204cc784f81f9f0daaf31e02e3"), "app_secret");
-    sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
-    C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSinaWeibo, sinaConfigDict);
 
-	CCDictionary *weixinConfigDict = CCDictionary::create();
-	weixinConfigDict -> setObject(CCString::create("568898243"), "app_id");
-	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiSession, weixinConfigDict);
-	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, weixinConfigDict);*/
+	 //åˆå§‹åŒ–ç¤¾äº¤å¹³å°ä¿¡æ¯
+	 this -> initPlatformConfig();
 
-	C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
-	C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
-	C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);
+	//C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
+	//C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
+	//C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);
 
-	C2DXShareSDK::getUserInfo(C2DXPlatTypeSinaWeibo, getUserResultHandler);
-	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiSession, getUserResultHandler);
-	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiTimeline, getUserResultHandler);
+	//C2DXShareSDK::getUserInfo(C2DXPlatTypeSinaWeibo, getUserResultHandler);
+	//C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiSession, getUserResultHandler);
+	//C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiTimeline, getUserResultHandler);
 
     // initialize director
     CCDirector *pDirector = CCDirector::sharedDirector();
@@ -197,4 +186,25 @@ void AppDelegate::applicationWillEnterForeground()
 void AppDelegate::setProjectConfig(const ProjectConfig& config)
 {
     m_projectConfig = config;
+}
+
+void AppDelegate::initPlatformConfig()
+{
+	//æ–°æµªå¾®åš
+	CCDictionary *sinaConfigDict = CCDictionary::create();
+	sinaConfigDict -> setObject(CCString::create("568898243"), "app_key");
+	sinaConfigDict -> setObject(CCString::create("38a4f8204cc784f81f9f0daaf31e02e3"), "app_secret");
+	sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSinaWeibo, sinaConfigDict);
+
+	//çŸ­ä¿¡
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSMS, NULL);
+
+
+	//å¾®ä¿¡
+	CCDictionary *wcConfigDict = CCDictionary::create();
+	wcConfigDict -> setObject(CCString::create("wx4868b35061f87885"), "app_id");
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiSession, wcConfigDict);
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, wcConfigDict);
+	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiFav, wcConfigDict);
 }

@@ -1,4 +1,4 @@
-﻿local scheduler = require("framework.scheduler")
+local scheduler = require("framework.scheduler")
 if ANDOIRD then
     local scheduler = require("framework.luaj")
 end
@@ -414,7 +414,7 @@ function MainScene:addGameOverButtons()
 
     local function clickShare()
         self:playSound("sounds/button.ogg")
-        LuaExport:showShareMenu("content", "image", "title", "des", "url")
+        LuaExport:showShareMenu("content", "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", "title", "des", "url")
     end
     self:addAButton("button_fenxiang.png", clickShare, ccp(WIN_WIDTH / 2 + 33, 160), display.CENTER_LEFT)
 end

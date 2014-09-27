@@ -84,6 +84,15 @@ if [ -d "$file" -a "fonts" != "$file" ]; then
 fi
 done
 
+# copy assets
+echo "copy assets"
+for file in "$APP_ROOT"/assets
+do
+if [ -d "$file" -a "fonts" != "$file" ]; then
+    cp -rf "$file" "$APP_ANDROID_ROOT"
+fi
+done
+
 # run ndk-build
 if [[ "$buildexternalsfromsource" ]]; then
     echo "Building external dependencies from source"

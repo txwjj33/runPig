@@ -37,6 +37,8 @@ public:
 
     void setProjectConfig(const ProjectConfig& config);
 
+	void initPlatformConfig();
+
 private:
     ProjectConfig m_projectConfig;
 };

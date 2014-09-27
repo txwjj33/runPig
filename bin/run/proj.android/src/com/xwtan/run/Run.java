@@ -25,6 +25,8 @@ package com.xwtan.run;
 
 import org.cocos2dx.lib.Cocos2dxActivity;
 import org.cocos2dx.lib.Cocos2dxHelper;
+import org.cocos2dx.lib.Cocos2dxGLSurfaceView;
+import org.cocos2dx.plugin.PluginWrapper;
 
 import cn.sharesdk.ShareSDKUtils;
 
@@ -79,6 +81,15 @@ public class Run extends Cocos2dxActivity {
 		ShareSDKUtils.prepare();
 		
 	}
+	
+	public Cocos2dxGLSurfaceView onCreateView() {
+    	Cocos2dxGLSurfaceView glSurfaceView = new Cocos2dxGLSurfaceView(this);
+    	// HelloCpp should create stencil buffer
+    	glSurfaceView.setEGLConfigChooser(5, 6, 5, 0, 16, 8);
+		PluginWrapper.init(this);
+		PluginWrapper.setGLSurfaceView(glSurfaceView);
+    	return glSurfaceView;
+    }
 
 	@Override
     protected void onDestroy() {

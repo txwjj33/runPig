@@ -10,10 +10,10 @@ void shareResultHandler(C2DXResponseState state, C2DXPlatType platType, CCDictio
 {
 	switch (state) {
 	case C2DXResponseStateSuccess:
-		CCLog("·ÖÏí³É¹¦");
+		CCLog("åˆ†äº«æˆåŠŸ");
 		break;
 	case C2DXResponseStateFail:
-		CCLog("·ÖÏíÊ§°Ü");
+		CCLog("åˆ†äº«å¤±è´¥");
 		break;
 	default:
 		break;
@@ -29,6 +29,10 @@ void LuaExport::showShareMenu(const char *content, const char* image, const char
 	dic->setObject(CCString::create(des), "description");
 	dic->setObject(CCString::create(url), "url");
 	dic->setObject(CCString::createWithFormat("%d", C2DXContentTypeNews), "type");
+	dic->setObject(CCString::create("http://sharesdk.cn"), "siteUrl");
+	dic->setObject(CCString::create("ShareSDK"), "site");
+	dic->setObject(CCString::create("http://mp3.mwap8.com/destdir/Music/2009/20090601/ZuiXuanMinZuFeng20090601119.mp3"), "musicUrl");
+	dic->setObject(CCString::create("extInfo"), "extInfo");
 
 	C2DXShareSDK::showShareMenu(NULL, dic, CCPointMake(100, 100), C2DXMenuArrowDirectionUp, shareResultHandler);
 }
