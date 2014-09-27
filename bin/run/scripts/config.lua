@@ -319,6 +319,8 @@ end
         for index1, path1 in ipairs(t) do
             if path1 ~= path and not string.find(path1, "mszy") then 
                 local nums1 = getNums(path1)
+                if nums1[1] == nil then print("error tmp, path " .. path1) end
+
                 if nums1[1] == nextLevel then
                     if nums1[2] == nums[3] then
                         --print("check xian jie is true")
