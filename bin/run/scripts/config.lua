@@ -46,6 +46,9 @@ GAME_TEXTURE_IMAGE_FILENAME = "AllSprites.png"
 MAP_MOVE_SPEED_LIMIT = 730
 MAP_MOVE_SPEED_START = 480
 
+--继续游戏需要的钻石数量
+DIAMOND_RESUME_GAME_NEEDED = 3
+
 --跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7
 JUMP_GE_ZI_VER = 3
@@ -53,10 +56,6 @@ JUMP_GE_ZI_VER = 3
 JUMP_XIANG_SU_VER = 10
 --碰到上面格子后反弹速度系数
 JUMP_FAN_TAN_XI_SHU = 0.1
-
---作弊模式，点击restart以后复活
---有问题，暂未使用
---CHEATING_MODE = false 
 
 --速度改变的间隔
 SPEED_CHANGE_TIME = 5

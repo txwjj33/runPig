@@ -35,6 +35,7 @@ local roleState = ROLE_STATE_JUMP_FALL
 local STRING_MAX_SCORE = "MAX_SCORE"
 local STRING_MUSIC = "MUSIC"
 local STRING_ZHEN_DONG = "ZHEN_DONG"
+local STRING_DIAMOND_COUNT = "SSSSSSSSSSSSSS"
 
 MAP_COUNT = 1
 local rolePosX = 0
@@ -43,7 +44,7 @@ local sYunWidth = 0
 local wudi = fasle       --µ±×Ô¶¯ÂäÏÂµÄÊ±ºòÊÇÎÞµÐµÄ
 
 local roleSize = 0
-local isGameOver = false
+local isGamePause = false
 --local jumping = false
 
 local font = "AGENTORANGE.ttf"
@@ -52,7 +53,6 @@ local levelNums = {0, 7, 7, 1}
 local firstLoadMap = true
 
 local score = 0
-local diamondScore = 0
 local maxScore = 0
 local yunCount = 0
 local caodiCount = 0
@@ -60,6 +60,8 @@ local caodiCount = 0
 local diamondTable = {}
 local roadShapeTable = {}
 local stuckShapeTable = {}
+
+local diamondCount = 0
 
 local newMapShapeInited = false
 
@@ -73,6 +75,9 @@ ROLE_JUMP_SPEED = 0
 ROLE_FALL_SPEED = 0
 
 TILE_WIDTH = 60
+
+local wudiWhenResume = false
+local resumeWudiTime = 0
 
 local MAP_ITEMS = 
 {
@@ -147,6 +152,7 @@ function MainScene:ctor()
         if not self.started then
             self.started = true
             self:startGame()
+            self.world:start()
         else
             if (self.collisionRoadCount > 0) then
                 self:roleJump()
@@ -166,12 +172,12 @@ function MainScene:ctor()
 end
 
 function MainScene:startGame()
-    self.world:start()
-    
+    if self.updateSchedule then scheduler.unscheduleGlobal(self.updateSchedule) end
     self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
         self:update(dt)
     end)
 
+    if self.updateSpeedSchedule then scheduler.unscheduleGlobal(self.updateSpeedSchedule) end
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
         --print("add speed")
         self:calSpeed()
@@ -200,18 +206,6 @@ function MainScene:roleJump()
     self.roleBody:setForce(ccp(0, 0))
     self.pigAnimation:setAnimation(0, "jump", true)
     --print("jump speed: " .. ROLE_JUMP_SPEED)
-
-    --local time = (JUMP_GE_ZI_VER * TILE_WIDTH) / ROLE_JUMP_SPEED
-    --print("time: " .. time)
-    --print("speed: " .. ROLE_JUMP_SPEED)
-    --local posY = self.roleBody:getPositionY()
-    --self.jumpSchedule = scheduler.performWithDelayGlobal(function(dt)
-    --    print("performWithDelayGlobal: " .. time)
-    --    --self.roleBody:setVelocity(ccp(0, -ROLE_JUMP_SPEED))
-    --    roleState = ROLE_STATE_JUMP_FALL
-    --    local posY2 = self.roleBody:getPositionY()
-    --    print("true speed: ", (posY2 - posY) / time)
-    --end, time)
 end
 
 function MainScene:initUI()
@@ -286,6 +280,7 @@ end
 
 function MainScene:addLabel()
     local height = 685
+    local heightDiamond = 625
     local fontSize = 40
 
     self.scoreLabel = CCLabelTTF:create("0", font, fontSize)
@@ -305,6 +300,19 @@ function MainScene:addLabel()
     bestLabel:setPosition(1049, height)
     bestLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(bestLabel)
+
+    local diamondLabel = CCLabelTTF:create("钻石", font, fontSize)
+    diamondLabel:setColor(ccc3(255,232,111))
+    diamondLabel:setPosition(1049, heightDiamond)
+    diamondLabel:setAnchorPoint(ccp(0, 0.5))
+    self:addChild(diamondLabel)
+
+    diamondCount = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_DIAMOND_COUNT, 0)
+    self.diamondCountLabel = CCLabelTTF:create(diamondCount, font, fontSize)
+    self.diamondCountLabel:setColor(ccc3(255,232,111))
+    self.diamondCountLabel:setPosition(1177, heightDiamond)
+    self.diamondCountLabel:setAnchorPoint(ccp(0, 0.5))
+    self:addChild(self.diamondCountLabel)
 end
 
 function MainScene:addButtons()
@@ -356,8 +364,9 @@ function MainScene:addButtons()
         :setButtonSelected(CCUserDefault:sharedUserDefault():getBoolForKey(STRING_ZHEN_DONG, true))
 end
 
-function MainScene:addAButton(img, clickCallback, pos, anchor)
+function MainScene:addAButton(img, clickCallback, pos, anchor, parent)
     local pAnchor = anchor or display.CENTER
+    local pParent = parent or self
     local btn = cc.ui.UIPushButton.new(img)
         :onButtonPressed(function(event)
             event.target:setScale(1.2)
@@ -367,65 +376,70 @@ function MainScene:addAButton(img, clickCallback, pos, anchor)
         end)
         :onButtonClicked(clickCallback)
         :align(pAnchor, pos.x, pos.y)
-        :addTo(self)
+        :addTo(pParent)
     return btn
 end
 
-function MainScene:addGameOverButtons()
+function MainScene:addGamePauseButtons()
+    self.gamePauseNode = CCNode:create()
+    self:addChild(self.gamePauseNode)
+
     local fontSize = 50
 
     cc.ui.UIImage.new("interface_youxijieshu.png")
         :align(display.CENTER, WIN_WIDTH / 2, 607)
-        :addTo(self)
+        :addTo(self.gamePauseNode)
 
     local bg = CCScale9Sprite:create("interface_diguang.png", CCRect(0, 0, 66, 51), CCRect(30, 25, 2, 2))
     bg:setContentSize(CCSize(410, 300))
     bg:setPosition(WIN_WIDTH / 2, 400)
-    self:addChild(bg)
+    self.gamePauseNode:addChild(bg)
 
     cc.ui.UIImage.new("interface_fengshu.png")
         :align(display.CENTER, WIN_WIDTH / 2, 500)
-        :addTo(self)
+        :addTo(self.gamePauseNode)
 
     local scoreLabel = CCLabelTTF:create(tostring(score), font, fontSize)
     scoreLabel:setColor(ccc3(255,254,219))
     scoreLabel:setPosition(WIN_WIDTH / 2, 435)
-    self:addChild(scoreLabel)
+    self.gamePauseNode:addChild(scoreLabel)
 
     cc.ui.UIImage.new("interface_zuigaofeng.png")
         :align(display.CENTER, WIN_WIDTH / 2, 366)
-        :addTo(self)
+        :addTo(self.gamePauseNode)
 
     local maxScoreLabel = CCLabelTTF:create(tostring(maxScore), font, fontSize)
     maxScoreLabel:setColor(ccc3(255,254,219))
     maxScoreLabel:setPosition(WIN_WIDTH / 2, 300)
-    self:addChild(maxScoreLabel)
+    self.gamePauseNode:addChild(maxScoreLabel)
 
     local function clickTryAgain()
+        self:gameOver()
         self:playSound("sounds/button.ogg")
-        if CHEATING_MODE then
-            self:fuhuo()
-        else
-            package.loaded["scenes.MainScene"] = nil
-            display.replaceScene(require("scenes.MainScene").new())
-        end
+        package.loaded["scenes.MainScene"] = nil
+        display.replaceScene(require("scenes.MainScene").new())
     end
-    self:addAButton("button_zailaiyici.png", clickTryAgain, ccp(WIN_WIDTH / 2 - 33, 160), display.CENTER_RIGHT)
+    self:addAButton("button_zailaiyici.png", clickTryAgain, ccp(WIN_WIDTH / 2 - 33, 160), 
+            display.CENTER_RIGHT, self.gamePauseNode)
 
     local function clickShare()
         self:playSound("sounds/button.ogg")
         LuaExport:showShareMenu("content", "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", "title", "des", "url")
     end
-    self:addAButton("button_fenxiang.png", clickShare, ccp(WIN_WIDTH / 2 + 33, 160), display.CENTER_LEFT)
-end
+    self:addAButton("button_fenxiang.png", clickShare, ccp(WIN_WIDTH / 2 + 33, 160), 
+            display.CENTER_LEFT, self.gamePauseNode)
 
-function MainScene:fuhuo()
-    isGameOver = false
-    wudi = true
-    self:onEnter()
-
-    self.pigAnimation:setAnimation(0, "run", true)
-    self.baseLayer:setTouchEnabled(true)
+    if diamondCount >= DIAMOND_RESUME_GAME_NEEDED then
+        --local function clickResume()
+        --    diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
+        --    CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
+        --    self.gamePauseNode:removeFromParent()
+        --    self:gameResume()
+        --    self.world:start()
+        --end
+        --local resumeBtn = self:addAButton("button_zailaiyici.png", clickResume, ccp(WIN_WIDTH / 2 - 33, 60), 
+        --        display.CENTER_RIGHT, self.gamePauseNode)
+    end
 end
 
 local function getNums(path)
@@ -729,10 +743,6 @@ function MainScene:addMapBody(posX)
 	return body
 end
 
---function MainScene:onBodyPostionListener(body, dt)
---    body:setPosition(ccp(body:getPositionX() - dt * MAP_MOVE_SPEED, 0))
---end
-
 function MainScene:createRole()
 	local layer = self.m_pOldMap:layerNamed("road1")
 	local tilePos = layer:positionAt(ccp(ROLE_POS_X, ROLE_POS_Y))
@@ -778,23 +788,6 @@ function MainScene:createRole()
     self.roleBody = roleBody
 end
 
---function MainScene:onRolePostionListener(body, dt)
---    if roleState == ROLE_STATE_ROAD then
---        --nothing to do
---    elseif roleState == ROLE_STATE_JUMP then
---        local x, y = body:getPosition()
---        --print("y, dt," .. y .. "  " .. dt)
---        --print("speed," .. ROLE_JUMP_SPEED)
---        body:setPosition(ccp(x, y + dt * ROLE_JUMP_SPEED))
---    elseif roleState == ROLE_STATE_JUMP_FALL or roleState == ROLE_STATE_COLLSION_TOP then
---        local x, y = body:getPosition()
---        body:setPosition(ccp(x, y - dt * ROLE_JUMP_SPEED))
---    elseif roleState == ROLE_STATE_FALL then
---        local x, y = body:getPosition()
---        body:setPosition(ccp(x, y - dt * ROLE_FALL_SPEED))
---    end
---end
-
 function MainScene:addBottomLineShape()
     local bottomWallBody = self.world:createBoxBody(0, WIN_WIDTH, 1)
     bottomWallBody:setPosition(0, 0)
@@ -828,14 +821,16 @@ function MainScene:onCollisionListener(phase, event)
 end
 
 function MainScene:onCollisionBegin(event)
-    if isGameOver then return false end
+    if isGamePause then return false end
 
     local body1 = event:getBody1()   --½ÇÉ«body
     local body2 = event:getBody2()   --µØÍ¼body
 
     local shape1 = event:getShape1()   --½ÇÉ«shape
     local shape2 = event:getShape2()   --µØÍ¼shape
-    if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
+
+    local shape1CollisionType = shape1:getCollisionType()
+    if shape1CollisionType == COLLISION_TYPE_ROLE_LINE then
         local collisionType = shape2:getCollisionType()
 
         if collisionType == COLLISION_TYPE_STUCK1 
@@ -850,9 +845,7 @@ function MainScene:onCollisionBegin(event)
             end
         end
         return false
-    end
-
-    if shape1:getCollisionType() == COLLISION_TYPE_REMOVE_SHAPE_LINE then
+    elseif shape1CollisionType == COLLISION_TYPE_REMOVE_SHAPE_LINE then
         local collisionType = shape2:getCollisionType()
         if collisionType == COLLISION_TYPE_ROAD or collisionType == COLLISION_TYPE_ROAD_FIX then
             if not roadShapeTable[shape2].isTop then
@@ -865,11 +858,10 @@ function MainScene:onCollisionBegin(event)
         end
         body2:removeShape(shape2)
         return false
-    end
-
-    if shape1:getCollisionType() == COLLISION_TYPE_ROLE then
+    elseif shape1CollisionType == COLLISION_TYPE_ROLE then
         if self.collisionLeft then 
-            self:gameOver()
+            self:gamePause()
+            self.collisionLeft = false
             return false
         end
 
@@ -898,14 +890,26 @@ function MainScene:onCollisionBegin(event)
             end
             --roleState = ROLE_STATE_COLLSION_TOP
         elseif collisionType == COLLISION_TYPE_DIAMOND then
-            diamondScore = diamondScore + DIAMOND_SCORE
+            diamondCount = diamondCount + 1
+            self.diamondCountLabel:setString(diamondCount)
+            CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
             diamondTable[shape2]:removeFromParent()
             body2:removeShape(shape2)
             self:playSound("sounds/diamond.ogg")
             --print("remove diamond")
         elseif collisionType == COLLISION_TYPE_BOTTOM_LINE then
-            self:gameOver()
+            if wudiWhenResume then
+                self:gameResume()
+                return false
+            end
+
+            self:gamePause()
         elseif collisionType == COLLISION_TYPE_ROAD_LEFT then
+            if wudiWhenResume then
+                self:gameResume()
+                return false
+            end
+
             self:playSound("sounds/left_road.ogg")
             if roleState ~= ROLE_STATE_ROAD then
                 body1:setVelocity(-10, -100)
@@ -919,17 +923,18 @@ function MainScene:onCollisionBegin(event)
                 scheduler.unscheduleGlobal(self.updateSpeedSchedule)
                 self.collisionLeft = true
             else
-                self:gameOver()
+                self:gamePause()
             end
+        --遇到仙人掌了
         else
-            if CHEAT_MODE or wudi then return false end
+            if CHEAT_MODE or wudi or wudiWhenResume then return false end
 
             if stuckShapeTable[shape2] then
                 local map = body2:getNode()
                 body1:setPosition(ccpAdd(stuckShapeTable[shape2], ccp(map:getPosition())))
             end
             self:playSound("sounds/truck.ogg")
-            self:gameOver()
+            self:gamePause()
         end
     end
 
@@ -937,7 +942,7 @@ function MainScene:onCollisionBegin(event)
 end
 
 function MainScene:onSeparate(event)
-    if isGameOver then return false end
+    if isGamePause then return false end
 
     local body1 = event:getBody1()   --½ÇÉ«body
     local body2 = event:getBody2()   --µØÍ¼body
@@ -981,15 +986,56 @@ end
 
 function MainScene:gameOver()
     --if CHEAT_MODE then return end
-    print("gameOver")
+    --print("gameOver")
 
-    isGameOver = true
+    --isGamePause = true
 
-    scheduler.unscheduleGlobal(self.updateSchedule)
-    scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+    --scheduler.unscheduleGlobal(self.updateSchedule)
+    --scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+    --if self.jumpSchedule then
+    --    scheduler.unscheduleGlobal(self.jumpSchedule)
+    --    self.jumpSchedule = true
+    --end
+
+    --self.pigAnimation:setAnimation(0, "dead", true)
+    --self.world:stop()
+    --self.baseLayer:setTouchEnabled(false)
+
+    --if score > maxScore then
+    --    maxScore = score
+    --    self.maxScoreLabel:setString(maxScore)
+    --    CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_MAX_SCORE, maxScore)
+    --end
+
+    --self:addGamePauseButtons()
+    
+    --if ANDOIRD then
+    --    luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
+    --    luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
+    --end
+end
+
+function MainScene:gamePause()
+    --if CHEAT_MODE then return end
+    print("gamePause")
+
+    isGamePause = true
+
+    if self.updateSchedule then
+        scheduler.unscheduleGlobal(self.updateSchedule)
+        self.updateSchedule = nil
+    end
+    if self.updateSpeedSchedule then
+        scheduler.unscheduleGlobal(self.updateSpeedSchedule)
+        self.updateSpeedSchedule = nil
+    end
     if self.jumpSchedule then
         scheduler.unscheduleGlobal(self.jumpSchedule)
-        self.jumpSchedule = true
+        self.jumpSchedule = nil
+    end
+    if self.resumeSchedule then
+        scheduler.unscheduleGlobal(self.resumeSchedule)
+        self.resumeSchedule = nil
     end
 
     self.pigAnimation:setAnimation(0, "dead", true)
@@ -1002,12 +1048,43 @@ function MainScene:gameOver()
         CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_MAX_SCORE, maxScore)
     end
 
-    self:addGameOverButtons()
+    self:addGamePauseButtons()
     
     if ANDOIRD then
         luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
         luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
     end
+end
+
+function MainScene:gameResume()
+     --if CHEAT_MODE then return end
+    print("gameResume")
+
+    isGamePause = false
+    self.collisionRoadCount = 0
+    wudi = false
+    
+    self:startGame()
+
+    self.baseLayer:setTouchEnabled(true)
+
+    local layer = self.m_pOldMap:layerNamed("road1")
+    local tilePos = layer:positionAt(ccp(ROLE_POS_X, 0))
+    self.roleBody:setPosition(tilePos)
+    self.roleBody:setForce(ccp(0, 0))
+    self.roleBody:setVelocity(ccp(0, 0))
+    roleState = ROLE_STATE_FALL
+
+    wudiWhenResume = true
+    if self.resumeSchedule then scheduler.unscheduleGlobal(self.resumeSchedule) end
+    self.resumeSchedule = scheduler.scheduleGlobal(function()
+        wudiWhenResume = false
+        scheduler.unscheduleGlobal(self.resumeSchedule)
+        self.resumeSchedule = nil
+    end, resumeWudiTime)
+end
+
+function MainScene:resetParms()
 end
 
 function MainScene:onEnter()
@@ -1031,6 +1108,9 @@ function MainScene:calSpeed()
     --print("GRAVITY :", GRAVITY)
 
     ROLE_FALL_SPEED = MAP_MOVE_SPEED
+
+    --resumeWudiTime = math.sqrt(CONFIG_SCREEN_HEIGHT / (GRAVITY /  2)) + 0.5
+    resumeWudiTime = 5
 end
 
 function MainScene:vibrate()
