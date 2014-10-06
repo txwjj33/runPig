@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="55" height="12" tilewidth="60" tileheight="60">
+ <tileset firstgid="1" name="1" tilewidth="60" tileheight="60">
+  <image source="mszy/road1.png" width="61" height="61"/>
+ </tileset>
+ <tileset firstgid="2" name="icon_diamond" tilewidth="39" tileheight="30">
+  <image source="mszy/icon_diamond.png" width="39" height="30"/>
+ </tileset>
+ <tileset firstgid="3" name="icon_zhangaiwu" tilewidth="60" tileheight="60">
+  <image source="mszy/icon_zhangaiwu.png" width="60" height="63"/>
+ </tileset>
+ <tileset firstgid="4" name="icon_zhangaiwu - 2" tilewidth="60" tileheight="60">
+  <image source="mszy/icon_zhangaiwu - 2.png" width="60" height="63"/>
+ </tileset>
+ <tileset firstgid="5" name="icon_zhangaiwu - 3" tilewidth="60" tileheight="60">
+  <image source="mszy/icon_zhangaiwu - 3.png" width="63" height="60"/>
+ </tileset>
+ <tileset firstgid="6" name="icon_zhangaiwu - 4" tilewidth="60" tileheight="60">
+  <image source="mszy/icon_zhangaiwu - 4.png" width="63" height="60"/>
+ </tileset>
+ <layer name="road1" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIKBAYx48GAC+NyHzw+D0S+jgHxAbFwTSgejaWT4gNH8jwAAvTgAMw==
+  </data>
+ </layer>
+ <layer name="stuck1" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUDGbADMWDHQwFN44C2gNC6ZUZjabEnlEwCkbB4AEAfgAAGQ==
+  </data>
+ </layer>
+ <layer name="diamond" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjALaAqaBdsAgBKNhgh/gCp/RcBsFo2BwAgAuaAAJ
+  </data>
+ </layer>
+ <layer name="road2" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUDHXACMW4xBnxqBkFo2AUDC4wmldHwVAEADzQAAo=
+  </data>
+ </layer>
+ <layer name="stuck2" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIKhB1hwsEfBKBgFo2AU0B8AADbAAAk=
+  </data>
+ </layer>
+ <layer name="stuck3" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIJRMApGwWAArAPtgFEwCsgEABf8AAY=
+  </data>
+ </layer>
+ <layer name="stuck4" width="55" height="12">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUjIJRMApGwUACtoF2wCgYBRQCABroAAc=
+  </data>
+ </layer>
+</map>

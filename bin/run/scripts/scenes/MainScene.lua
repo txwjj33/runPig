@@ -171,6 +171,17 @@ function MainScene:ctor()
 end
 
 function MainScene:startGame()
+    local function updateBodySpeed()
+        for _, body in ipairs(self.mapBodys) do 
+            body:setVelocity(-MAP_MOVE_SPEED, 0)           
+            body:setForce(0, -GRAVITY)           
+        end
+        if roleState == ROLE_STATE_ROAD then
+            self.roleBody:setForce(0, -GRAVITY) 
+        end
+        self.world:setGravity(0, GRAVITY)
+    end
+
     if self.updateSchedule then scheduler.unscheduleGlobal(self.updateSchedule) end
     self.updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
         self:update(dt)
@@ -180,20 +191,15 @@ function MainScene:startGame()
     self.updateSpeedSchedule = scheduler.scheduleGlobal(function(dt)
         --print("add speed")
         self:calSpeed()
-        for _, body in ipairs(self.mapBodys) do 
-            body:setVelocity(-MAP_MOVE_SPEED, 0)           
-            body:setForce(0, -GRAVITY)           
-        end
-        if roleState == ROLE_STATE_ROAD then
-            self.roleBody:setForce(0, -GRAVITY) 
-        end
-        self.world:setGravity(0, GRAVITY)
+        updateBodySpeed()
     end, SPEED_CHANGE_TIME)
 
     self.startLayerNode:setVisible(false)
     self.pigAnimation:setAnimation(0, "run", true)
 
     self.callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
+
+    updateBodySpeed()
 end
 
 function MainScene:roleJump()
@@ -537,11 +543,12 @@ function MainScene:addShapesAtPos(x, body, map)
 		        local pos = ccpAdd(ccp(tile:getPosition()), ccp(tileSize.width / 2, tileSize.height / 2))
 
                 --¼ì²éÊÇ²»ÊÇ×î×ó±ßµÄroad
-                local function checkLeftRoad()
+                local function checkLeftRoad(pTable)
                     if (x == 0) or ( not layer:tileAt(ccp(x - 1, y)) ) then
-                        addRoadShape(COLLISION_TYPE_ROAD_LEFT,
+                        local shape = addRoadShape(COLLISION_TYPE_ROAD_LEFT,
 					        ccp(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2 + 5), 
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2 - 5))
+                        roadShapeTable[shape] = pTable
                     end
                 end
 
@@ -554,21 +561,25 @@ function MainScene:addShapesAtPos(x, body, map)
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
 					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 5)
 
-                    checkLeftRoad()
                     roadShapeTable[shape] = {}
+                    roadShapeTable[shape].posX = pos.x
                     roadShapeTable[shape].posY = pos.y + tileSize.height / 2
                     roadShapeTable[shape].tilePosX = x
                     roadShapeTable[shape].isTop = true
+
+                    checkLeftRoad(roadShapeTable[shape])
                 elseif v == COLLISION_TYPE_ROAD then
                     local shape = addRoadShape(COLLISION_TYPE_ROAD,
 					        ccp(pos.x - tileSize.width / 2, pos.y + tileSize.height / 2), 
 					        ccp(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2), 5)
 
-                    checkLeftRoad()
                     roadShapeTable[shape] = {}
+                    roadShapeTable[shape].posX = pos.x
                     roadShapeTable[shape].posY = pos.y + tileSize.height / 2
                     roadShapeTable[shape].tilePosX = x
                     roadShapeTable[shape].isTop = false
+
+                    checkLeftRoad(roadShapeTable[shape])
                 elseif v == COLLISION_TYPE_STUCK1 then
                     local vertexes = CCPointArray:create(3)
                     vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y - tileSize.height / 2))
@@ -905,7 +916,10 @@ function MainScene:onCollisionBegin(event)
             self:gamePause()
         elseif collisionType == COLLISION_TYPE_ROAD_LEFT then
             if wudiWhenResume then
-                self:gameResume()
+                --self:gameResume()
+                local x, y = body1:getPosition()
+                self.pigAnimation:setAnimation(0, "run", true)
+                body1:setPosition(ccp(x, roadShapeTable[shape2].posY + roleHeight / 2+ 5))
                 return false
             end
 
@@ -1097,7 +1111,7 @@ function MainScene:calSpeed()
     ROLE_FALL_SPEED = MAP_MOVE_SPEED
 
     --resumeWudiTime = math.sqrt(CONFIG_SCREEN_HEIGHT / (GRAVITY /  2)) + 0.5
-    resumeWudiTime = 5
+    resumeWudiTime = RESUME_WU_DI_TIME
 end
 
 function MainScene:vibrate()

@@ -6,13 +6,16 @@ DEBUG_FPS = true
 ANDOIRD = false
 
 --开启以后所有仙人掌无效
-CHEAT_MODE = false
+CHEAT_MODE = true
+
+--钻石复活的无敌时间
+RESUME_WU_DI_TIME = 3
 
 --测试单个地图
 MAP_TEST = false
 MAP_TEST_FILE = "levels/_test.tmx"
 
-MAPS_TEST = true
+MAPS_TEST = false
 --MAP_TEST_FILES = 
 --{
 --    "levels/0_7_7_1.tmx",
@@ -23,8 +26,8 @@ MAPS_TEST = true
 MAP_TEST_FILES = 
 {
     "levels/0_7_7_1.tmx",
-    "levels/1_7_6_1.tmx",
-    "levels/2_6_6_1.tmx",
+    "levels/1_7_7_1.tmx",
+    "levels/2_7_6_1.tmx",
 }
 
 --开启碰撞检测区域显示
@@ -257,11 +260,18 @@ end
         if not map then
             print(path .. "does not exist or has problems")
             allMapTrue = false
+            return
         end
 
         local mapSize = map:getMapSize()
         local layer = map:layerNamed("road1")
         local nums = getNums(path)
+
+        if nums[1] ~= 0 and mapSize.width < 22 then
+            print(path .. "map width must larger than 22!!")
+            allMapTrue = false
+            return
+        end 
 
         local function checkTile(isStart)
             local startPos, endPos, step, num
@@ -295,6 +305,33 @@ end
             end
         end
 
+        local function checkXianJie()
+            local nextLevel = 0
+            if nums[1] < LEVEL_MAX then
+                nextLevel = nums[1] + 1
+            else
+                nextLevel = LEVEL_MAX
+            end
+
+            for index1, path1 in ipairs(t) do
+                if path1 ~= path and not string.find(path1, "mszy") then 
+                    local nums1 = getNums(path1)
+                    if nums1[1] == nil then print("error tmx, path " .. path1) end
+
+                    if nums1[1] == nextLevel then
+                        if nums1[2] == nums[3] then
+                            --print("check xian jie is true")
+                            return true
+                        end
+                    elseif nums1[1] > nextLevel then
+                        return false
+                    end
+                end
+            end
+
+            return false
+        end
+
         
         if not layer then
             print(path .. "does not exist layer road1")
@@ -308,31 +345,11 @@ end
             end
         end
 
-        local nextLevel = 0
-        if nums[1] < LEVEL_MAX then
-            nextLevel = nums[1] + 1
-        else
-            nextLevel = LEVEL_MAX
-        end
-
-        for index1, path1 in ipairs(t) do
-            if path1 ~= path and not string.find(path1, "mszy") then 
-                local nums1 = getNums(path1)
-                if nums1[1] == nil then print("error tmp, path " .. path1) end
-
-                if nums1[1] == nextLevel then
-                    if nums1[2] == nums[3] then
-                        --print("check xian jie is true")
-                        return 
-                    end
-                elseif nums1[1] > nextLevel then
-                    print("---------------------------------------------------") 
-                    print("check xian jie is false")
-                    print("---------------------------------------------------") 
-                    allMapTrue = false
-                    return
-                end
-            end
+        if not checkXianJie() then
+            print("---------------------------------------------------") 
+            print("check xian jie is false")
+            print("---------------------------------------------------") 
+            allMapTrue = false
         end
     end
 
