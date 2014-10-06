@@ -37,7 +37,6 @@ local STRING_MUSIC = "MUSIC"
 local STRING_ZHEN_DONG = "ZHEN_DONG"
 local STRING_DIAMOND_COUNT = "SSSSSSSSSSSSSS"
 
-MAP_COUNT = 1
 local rolePosX = 0
 local sYunWidth = 0
 
@@ -430,15 +429,15 @@ function MainScene:addGamePauseButtons()
             display.CENTER_LEFT, self.gamePauseNode)
 
     if diamondCount >= DIAMOND_RESUME_GAME_NEEDED then
-        --local function clickResume()
-        --    diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
-        --    CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
-        --    self.gamePauseNode:removeFromParent()
-        --    self:gameResume()
-        --    self.world:start()
-        --end
-        --local resumeBtn = self:addAButton("button_zailaiyici.png", clickResume, ccp(WIN_WIDTH / 2 - 33, 60), 
-        --        display.CENTER_RIGHT, self.gamePauseNode)
+        local function clickResume()
+            diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
+            CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
+            self.gamePauseNode:removeFromParent()
+            self:gameResume()
+            self.world:start()
+        end
+        local resumeBtn = self:addAButton("button_zailaiyici.png", clickResume, ccp(WIN_WIDTH / 2 - 33, 60), 
+                display.CENTER_RIGHT, self.gamePauseNode)
     end
 end
 
@@ -876,7 +875,7 @@ function MainScene:onCollisionBegin(event)
 
             wudi = false
 		    self.collisionRoadCount = self.collisionRoadCount + 1
-            --print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
+            print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
 		    --¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
             body1:setForce(ccp(0, -GRAVITY))
             body1:setVelocity(ccp(0, 0))
@@ -951,24 +950,12 @@ function MainScene:onSeparate(event)
     local shape2 = event:getShape2()   --µØÍ¼shape
 
     local collisionType = shape1:getCollisionType()
-
-    if shape1:getCollisionType() == COLLISION_TYPE_ROLE_LINE then
-        --if (collisionType == COLLISION_TYPE_ROAD) then return false end
-    	--local collisionType = shape2:getCollisionType()
-     --   if collisionType == COLLISION_TYPE_DIAMOND then
-     --       diamondTable[shape2] = nil
-     --   elseif collisionType == COLLISION_TYPE_ROAD then
-     --   	roadShapeTable[shape2] = nil
-     --   end
-     --   body2:removeShape(shape2)
+    --print("onSeparate collision_type: " .. collisionType)
+    if collisionType == COLLISION_TYPE_ROLE_LINE then
         return false
-    end
-
-    --local collisionType = event:getShape2():getCollisionType()
-	--print("onSeparate collision_type: " .. collisionType)
-	if collisionType == COLLISION_TYPE_ROLE and shape2 and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) then
+	elseif collisionType == COLLISION_TYPE_ROLE and shape2 and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) then
 		self.collisionRoadCount = self.collisionRoadCount - 1
-        --print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
+        print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
 		
 		--Àë¿ªËùÓÐµÄµÀÂ·£¬»Ö¸´ÖØÁ¦Ð§¹û
 		if (self.collisionRoadCount == 0) then
@@ -1059,12 +1046,9 @@ end
 function MainScene:gameResume()
      --if CHEAT_MODE then return end
     print("gameResume")
-
-    isGamePause = false
-    self.collisionRoadCount = 0
-    wudi = false
     
     self:startGame()
+    self:resetParms()
 
     self.baseLayer:setTouchEnabled(true)
 
@@ -1085,6 +1069,9 @@ function MainScene:gameResume()
 end
 
 function MainScene:resetParms()
+    self.collisionRoadCount = 0
+    wudi = false
+    isGamePause = false
 end
 
 function MainScene:onEnter()
