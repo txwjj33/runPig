@@ -1,30 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="51" height="12" tilewidth="60" tileheight="60">
  <tileset firstgid="1" name="1" tilewidth="60" tileheight="60">
-  <image source="mszy/road1.png" width="89" height="81"/>
+  <image source="mszy/road1.png" width="61" height="61"/>
  </tileset>
- <tileset firstgid="2" name="stuck1" tilewidth="60" tileheight="120">
-  <image source="mszy/stuck1.png" width="89" height="143"/>
- </tileset>
- <tileset firstgid="3" name="icon_diamond" tilewidth="39" tileheight="30">
+ <tileset firstgid="2" name="icon_diamond" tilewidth="39" tileheight="30">
   <image source="mszy/icon_diamond.png" width="39" height="30"/>
  </tileset>
- <tileset firstgid="4" name="下" tilewidth="60" tileheight="60">
-  <image source="mszy/road1.png" width="89" height="81"/>
- </tileset>
- <tileset firstgid="5" name="障碍下" tilewidth="60" tileheight="120">
-  <image source="mszy/stuck2.png" width="89" height="143"/>
- </tileset>
- <tileset firstgid="6" name="障碍右" tilewidth="120" tileheight="60">
-  <image source="mszy/stuck4.png" width="143" height="89"/>
- </tileset>
- <tileset firstgid="7" name="障碍左" tilewidth="120" tileheight="60">
-  <image source="mszy/stuck3.png" width="143" height="89"/>
- </tileset>
- <tileset firstgid="8" name="icon_zhangaiwu" tilewidth="60" tileheight="60">
+ <tileset firstgid="3" name="icon_zhangaiwu" tilewidth="60" tileheight="60">
   <image source="mszy/icon_zhangaiwu.png" width="60" height="63"/>
  </tileset>
- <tileset firstgid="9" name="icon_zhangaiwu - 2" tilewidth="60" tileheight="60">
+ <tileset firstgid="4" name="icon_zhangaiwu - 2" tilewidth="60" tileheight="60">
   <image source="mszy/icon_zhangaiwu - 2.png" width="60" height="63"/>
  </tileset>
  <layer name="road1" width="51" height="12">
@@ -34,12 +19,12 @@
  </layer>
  <layer name="stuck1" width="51" height="12">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2BkAo6BdgAZgIOBeHcPRf8NBjDcwo2UNDOQgAMNj4JRMNIAAIf/AFk=
+   eJxjYBgFo2BkAuaBdgAZgJmBeHcPRf8NBjDcwo2UNDOQgBkNj4JRMNIAAJj0ACI=
   </data>
  </layer>
  <layer name="diamond" width="51" height="12">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUjIJRgA8wD7QDGAaHG0bBKBgFtAMAInQABw==
+   eJxjYBgFo2AUjIJRgA8wDbQDGAaHG0bBKBgFtAMAGigABQ==
   </data>
  </layer>
  <layer name="road2" width="51" height="12">
@@ -49,7 +34,7 @@
  </layer>
  <layer name="stuck2" width="51" height="12">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo2AUDAbAOdAOGAWjYBSMglEwYAAAP7QACg==
+   eJxjYBgFo2AUDAbAMtAOGAWjYBSMglEwYAAAIaAABQ==
   </data>
  </layer>
 </map>

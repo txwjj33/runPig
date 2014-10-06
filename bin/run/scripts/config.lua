@@ -12,7 +12,7 @@ CHEAT_MODE = false
 MAP_TEST = false
 MAP_TEST_FILE = "levels/_test.tmx"
 
-MAPS_TEST = false
+MAPS_TEST = true
 --MAP_TEST_FILES = 
 --{
 --    "levels/0_7_7_1.tmx",
@@ -23,8 +23,8 @@ MAPS_TEST = false
 MAP_TEST_FILES = 
 {
     "levels/0_7_7_1.tmx",
-    "levels/1_7_9_3.tmx",
-    "levels/2_9_9_1.tmx",
+    "levels/1_7_6_1.tmx",
+    "levels/2_6_6_1.tmx",
 }
 
 --开启碰撞检测区域显示
