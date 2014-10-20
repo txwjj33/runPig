@@ -14,10 +14,10 @@ public class IAPHandler extends Handler {
 	public static final int QUERY_FINISH = 10002;
 	public static final int UNSUB_FINISH = 10003;
 
-	private Demo context;
+	private Run context;
 
 	public IAPHandler(Activity context) {
-		this.context = (Demo) context;
+		this.context = (Run) context;
 	}
 
 	@Override

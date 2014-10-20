@@ -397,4 +397,9 @@ public class Run extends Cocos2dxActivity {
     	System.loadLibrary("game");
     }
 
+	public void dismissProgressDialog() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

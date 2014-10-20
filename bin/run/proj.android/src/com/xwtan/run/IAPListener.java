@@ -11,11 +11,11 @@ import android.util.Log;
 
 public class IAPListener implements OnPurchaseListener {
 	private final String TAG = "IAPListener";
-	private Demo context;
+	private Run context;
 	private IAPHandler iapHandler;
 
 	public IAPListener(Context context, IAPHandler iapHandler) {
-		this.context = (Demo) context;
+		this.context = (Run) context;
 		this.iapHandler = iapHandler;
 	}
 
