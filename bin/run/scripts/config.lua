@@ -5,11 +5,13 @@ DEBUG_FPS = true
 
 ANDOIRD = false
 
+DEFAULT_FONT = "AGENTORANGE.ttf"
+
 --开启以后所有仙人掌无效
 CHEAT_MODE = true
 
 --钻石复活的无敌时间
-RESUME_WU_DI_TIME = 3
+RESUME_WU_DI_TIME = 2
 
 --测试单个地图
 MAP_TEST = false
@@ -76,7 +78,7 @@ ROLE_POS_X = 5
 ROLE_POS_Y = 5
 
 --同时显示几列的碰撞形状
-ROAD_SHAPE_NUM = 5
+ROAD_SHAPE_NUM = 20
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720

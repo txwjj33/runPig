@@ -7,7 +7,7 @@ require("framework.init")
 game = {}
 
 function game.startup()
-    display.replaceScene(require("scenes.MainScene").new(), "fade", 0.6, display.COLOR_WHITE)
+    display.replaceScene(require("scenes.StartScene").new())
 end
 
 function game.exit()

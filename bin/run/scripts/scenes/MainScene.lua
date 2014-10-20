@@ -5,6 +5,20 @@ end
 local audio = require("framework.audio")
 local mapName = require("mapName")
 
+--[[
+小猪动画：
+admation, run: 跑
+jump： 跳
+idle： 静止
+dead4， dead6： 刺猬死
+dead1，dead2，dead3：撞墙死
+
+宝石动画：
+7： 闪光
+8： 不闪光
+animation: 绿色
+]]
+
 local MainScene = class("MainScene", function()
     return display.newScene("MainScene")
 end)
@@ -39,14 +53,13 @@ local STRING_DIAMOND_COUNT = "SSSSSSSSSSSSSS"
 
 local rolePosX = 0
 local sYunWidth = 0
+local sJianzhuWidth = 0
 
 local wudi = fasle       --µ±×Ô¶¯ÂäÏÂµÄÊ±ºòÊÇÎÞµÐµÄ
 
 local roleSize = 0
 local isGamePause = false
 --local jumping = false
-
-local font = "AGENTORANGE.ttf"
 
 local levelNums = {0, 7, 7, 1}
 local firstLoadMap = true
@@ -55,6 +68,7 @@ local score = 0
 local maxScore = 0
 local yunCount = 0
 local caodiCount = 0
+local jianzhuCount = 0
 --×êÊ¯shape±í
 local diamondTable = {}
 local roadShapeTable = {}
@@ -219,6 +233,7 @@ function MainScene:initUI()
         :addTo(self)
     self:addYun()
     self:addSun()
+    self:addJianzhu()
     self:addCaodi()
 end
 
@@ -283,37 +298,65 @@ end
 function MainScene:addSun()
 end
 
+function MainScene:addAJianZhu(posX)
+    local jianzhu = cc.ui.UIImage.new("interface_jianzhuwu.png")
+        :align(display.LEFT_BOTTOM, posX, 30)
+        :addTo(self.jianzhuNode)
+
+    table.insert(self.jianzhuTable, jianzhu)
+    if sJianzhuWidth == 0 then
+        local size = jianzhu:getContentSize()
+        sJianzhuWidth = size.width
+    end
+end
+
+function MainScene:addJianzhu()
+    self.jianzhuBody = self:addMapBody(0)
+    table.insert(self.mapBodys, self.jianzhuBody) 
+    self.jianzhuNode = display.newNode()
+    self:addChild(self.jianzhuNode)
+    self.jianzhuBody:bind(self.jianzhuNode)
+
+    self.jianzhuTable = {}
+    --self.caodiBatchNode = CCSpriteBatchNode:create("interface_caodi.png", 50)
+    --    :addTo(self.caodiNode)
+
+    for k = 0, 3 do
+        self:addAJianZhu(k * sJianzhuWidth)
+    end
+end
+
 function MainScene:addLabel()
     local height = 685
     local heightDiamond = 625
     local fontSize = 40
 
-    self.scoreLabel = CCLabelTTF:create("0", font, fontSize)
+    self.scoreLabel = CCLabelTTF:create("0", DEFAULT_FONT, fontSize)
     self.scoreLabel:setColor(ccc3(255,254,219))
     self.scoreLabel:setPosition(CONFIG_SCREEN_WIDTH / 2, height)
     self:addChild(self.scoreLabel)
 
     maxScore = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_MAX_SCORE, 0)
-    self.maxScoreLabel = CCLabelTTF:create(maxScore, font, fontSize)
+    self.maxScoreLabel = CCLabelTTF:create(maxScore, DEFAULT_FONT, fontSize)
     self.maxScoreLabel:setColor(ccc3(255,232,111))
     self.maxScoreLabel:setPosition(1177, height)
     self.maxScoreLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(self.maxScoreLabel)
 
-    local bestLabel = CCLabelTTF:create("最高分", font, fontSize)
+    local bestLabel = CCLabelTTF:create("最高分", DEFAULT_FONT, fontSize)
     bestLabel:setColor(ccc3(255,232,111))
     bestLabel:setPosition(1049, height)
     bestLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(bestLabel)
 
-    local diamondLabel = CCLabelTTF:create("钻石", font, fontSize)
+    local diamondLabel = CCLabelTTF:create("钻石", DEFAULT_FONT, fontSize)
     diamondLabel:setColor(ccc3(255,232,111))
     diamondLabel:setPosition(1049, heightDiamond)
     diamondLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(diamondLabel)
 
     diamondCount = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_DIAMOND_COUNT, 0)
-    self.diamondCountLabel = CCLabelTTF:create(diamondCount, font, fontSize)
+    self.diamondCountLabel = CCLabelTTF:create(diamondCount, DEFAULT_FONT, fontSize)
     self.diamondCountLabel:setColor(ccc3(255,232,111))
     self.diamondCountLabel:setPosition(1177, heightDiamond)
     self.diamondCountLabel:setAnchorPoint(ccp(0, 0.5))
@@ -391,59 +434,47 @@ function MainScene:addGamePauseButtons()
 
     local fontSize = 50
 
-    cc.ui.UIImage.new("interface_youxijieshu.png")
-        :align(display.CENTER, WIN_WIDTH / 2, 607)
-        :addTo(self.gamePauseNode)
+    cc.ui.UIImage.new("interface_dikuang.png")
+       :align(display.CENTER, WIN_WIDTH / 2, WIN_HEIGHT / 2)
+       :addTo(self.gamePauseNode)
 
-    local bg = CCScale9Sprite:create("interface_diguang.png", CCRect(0, 0, 66, 51), CCRect(30, 25, 2, 2))
-    bg:setContentSize(CCSize(410, 300))
-    bg:setPosition(WIN_WIDTH / 2, 400)
-    self.gamePauseNode:addChild(bg)
-
-    cc.ui.UIImage.new("interface_fengshu.png")
-        :align(display.CENTER, WIN_WIDTH / 2, 500)
-        :addTo(self.gamePauseNode)
-
-    local scoreLabel = CCLabelTTF:create(tostring(score), font, fontSize)
-    scoreLabel:setColor(ccc3(255,254,219))
-    scoreLabel:setPosition(WIN_WIDTH / 2, 435)
+    local scoreLabel = CCLabelTTF:create(tostring(score), DEFAULT_FONT, fontSize)
+    scoreLabel:setColor(ccc3(14,78,124))
+    scoreLabel:setPosition(550, 440)
     self.gamePauseNode:addChild(scoreLabel)
 
-    cc.ui.UIImage.new("interface_zuigaofeng.png")
-        :align(display.CENTER, WIN_WIDTH / 2, 366)
-        :addTo(self.gamePauseNode)
-
-    local maxScoreLabel = CCLabelTTF:create(tostring(maxScore), font, fontSize)
-    maxScoreLabel:setColor(ccc3(255,254,219))
-    maxScoreLabel:setPosition(WIN_WIDTH / 2, 300)
+    local maxScoreLabel = CCLabelTTF:create(tostring(maxScore), DEFAULT_FONT, fontSize)
+    maxScoreLabel:setColor(ccc3(14,78,124))
+    maxScoreLabel:setPosition(764, 440)
     self.gamePauseNode:addChild(maxScoreLabel)
 
     local function clickTryAgain()
-        self:gameOver()
-        self:playSound("sounds/button.ogg")
-        package.loaded["scenes.MainScene"] = nil
-        display.replaceScene(require("scenes.MainScene").new())
+       self:gameOver()
+       self:playSound("sounds/button.ogg")
+       package.loaded["scenes.MainScene"] = nil
+       display.replaceScene(require("scenes.MainScene").new())
     end
-    self:addAButton("button_zailaiyici.png", clickTryAgain, ccp(WIN_WIDTH / 2 - 33, 160), 
-            display.CENTER_RIGHT, self.gamePauseNode)
+    self:addAButton("button_zailaiyici.png", clickTryAgain, ccp(WIN_WIDTH / 2 - 15, 221), 
+           display.CENTER_RIGHT, self.gamePauseNode)
 
     local function clickShare()
-        self:playSound("sounds/button.ogg")
-        LuaExport:showShareMenu("content", "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", "title", "des", "url")
+       self:playSound("sounds/button.ogg")
+       LuaExport:showShareMenu("content", "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", "title", "des", "url")
     end
-    self:addAButton("button_fenxiang.png", clickShare, ccp(WIN_WIDTH / 2 + 33, 160), 
-            display.CENTER_LEFT, self.gamePauseNode)
+    self:addAButton("button_fengxiang.png", clickShare, ccp(990, WIN_HEIGHT - 313), 
+           display.TOP_RIGHT, self.gamePauseNode)
 
     if diamondCount >= DIAMOND_RESUME_GAME_NEEDED then
-        local function clickResume()
-            diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
-            CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
-            self.gamePauseNode:removeFromParent()
-            self:gameResume()
-            self.world:start()
-        end
-        local resumeBtn = self:addAButton("button_zailaiyici.png", clickResume, ccp(WIN_WIDTH / 2 - 33, 60), 
-                display.CENTER_RIGHT, self.gamePauseNode)
+       local function clickResume()
+           diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
+           self.diamondCountLabel:setString(diamondCount)
+           CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
+           self.gamePauseNode:removeFromParent()
+           self:gameResume()
+           self.world:start()
+       end
+       local resumeBtn = self:addAButton("button_fuhuo.png", clickResume, ccp(WIN_WIDTH / 2 + 15, 221), 
+               display.CENTER_LEFT, self.gamePauseNode)
     end
 end
 
@@ -618,13 +649,19 @@ function MainScene:addShapesAtPos(x, body, map)
 			        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y + tileSize.height / 2))
 			        vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y - tileSize.height / 2))
 
-
         --               vertexes:add(cc.p(pos.x, pos.y - tileSize.height / 2))
 			        --vertexes:add(cc.p(pos.x - tileSize.width / 2, pos.y))
 			        --vertexes:add(cc.p(pos.x, pos.y + tileSize.height / 2))
 			        --vertexes:add(cc.p(pos.x + tileSize.width / 2, pos.y))
 			        local shape = body:addPolygonShape(vertexes)
                     shape:setCollisionType(v)
+
+                    local baoshiAnimation = SkeletonAnimation:createWithFile("export/baoshi.json", "export/baoshi.atlas", 1)
+                    baoshiAnimation:setAnimation(0, "animation", true)
+                    baoshiAnimation:setPosition(ccp(tile:getPosition()))
+                    map:addChild(baoshiAnimation)
+
+                    tile:removeFromParent()
 
                     if v == COLLISION_TYPE_DIAMOND then
                         diamondTable[shape] = tile
@@ -666,26 +703,30 @@ function MainScene:update(dt)
 	--µØÍ¼ÒÑ³ö½ç£¬É¾³ý¾ÉµØÍ¼£¬Ìí¼ÓÐÂµØÍ¼
 	if (oldBodyPos <= - oldMapWidth) then
 		self:removeOldMapAddNewMap()
-    end
+   end
 
-    if not newMapShapeInited then
-        local layer = self.m_pOldMap:layerNamed("road1")
-	    --local tilePos = layer:positionAt(ccp(ROLE_POS_X - 1, ROLE_POS_Y))
-        if self.m_pNewMap:getPositionX() < rolePosX + TILE_WIDTH * 2 then
-            newMapShapeInited = true
-            for i = 0, ROAD_SHAPE_NUM - 1 do 
+   if not newMapShapeInited then
+       local layer = self.m_pOldMap:layerNamed("road1")
+	   --local tilePos = layer:positionAt(ccp(ROLE_POS_X - 1, ROLE_POS_Y))
+       if self.m_pNewMap:getPositionX() < rolePosX + TILE_WIDTH * 2 then
+           newMapShapeInited = true
+           for i = 0, ROAD_SHAPE_NUM - 1 do 
 		        self:addShapesAtPos(i, self.m_pNewMapBody, self.m_pNewMap)
-	        end
-        end
-    end
+	       end
+       end
+   end
 
-    if (self.yunNode:getPositionX() < - sYunWidth * (yunCount + 1)) then
-        self:removeOldYun()
-    end
+   if (self.yunNode:getPositionX() < - sYunWidth * (yunCount + 1)) then
+       self:removeOldYun()
+   end
 
-    if (self.caodiNode:getPositionX() < - WIN_WIDTH * (caodiCount + 1)) then
-        self:removeOldCaodi()
-    end
+   if (self.jianzhuNode:getPositionX() < - sJianzhuWidth * (jianzhuCount + 1)) then
+       self:removeOldJianzhu()
+   end
+
+   if (self.caodiNode:getPositionX() < - WIN_WIDTH * (caodiCount + 1)) then
+       self:removeOldCaodi()
+   end
 end
 
 function MainScene:removeOldMapAddNewMap()
@@ -741,6 +782,18 @@ function MainScene:removeOldYun()
     self:addAYun(pos)
 end
 
+function MainScene:removeOldJianzhu()
+    jianzhuCount = jianzhuCount + 1
+
+    local jianzhu = self.jianzhuTable[1]
+    jianzhu:removeFromParentAndCleanup(true)
+    table.remove(self.jianzhuTable, 1)
+
+    local lastjianzhu = self.jianzhuTable[#self.jianzhuTable]
+    local pos = lastjianzhu:getPositionX() + sJianzhuWidth
+    self:addAJianZhu(pos)
+end
+
 function MainScene:addMapBody(posX)
 	local body = CCPhysicsBody:create(self.world, 1, 1)
     self.world:addBody(body)
@@ -758,7 +811,9 @@ function MainScene:createRole()
 	local tilePos = layer:positionAt(ccp(ROLE_POS_X, ROLE_POS_Y))
     rolePosX = tilePos.x
     
-    self.pigAnimation = SkeletonAnimation:createWithFile("pig/skeleton.json", "pig/skeleton.atlas", 1)
+    --self.pigAnimation = SkeletonAnimation:createWithFile("pig/skeleton.json", "pig/skeleton.atlas", 1)
+    self.pigAnimation = SkeletonAnimation:createWithFile("export/pig.json", "export/pig.atlas", 1)
+    self.pigAnimation:setAnimation(0, "idle", true)
     self:addChild(self.pigAnimation)
 
 	--roleSize = role:getContentSize()
@@ -886,7 +941,7 @@ function MainScene:onCollisionBegin(event)
 
             wudi = false
 		    self.collisionRoadCount = self.collisionRoadCount + 1
-            print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
+            --print("onCollisionBegin collisionRoadCount: " .. self.collisionRoadCount)
 		    --¸øroleÒ»¸öÁ¦µÖÏûÖØÁ¦
             body1:setForce(ccp(0, -GRAVITY))
             body1:setVelocity(ccp(0, 0))
@@ -967,9 +1022,12 @@ function MainScene:onSeparate(event)
     --print("onSeparate collision_type: " .. collisionType)
     if collisionType == COLLISION_TYPE_ROLE_LINE then
         return false
-	elseif collisionType == COLLISION_TYPE_ROLE and shape2 and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) then
+	elseif collisionType == COLLISION_TYPE_ROLE and shape2 
+            and (shape2:getCollisionType() == COLLISION_TYPE_ROAD) 
+            and self.collisionRoadCount > 0
+            then
 		self.collisionRoadCount = self.collisionRoadCount - 1
-        print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
+        --print("onSeparate collisionRoadCount: " .. self.collisionRoadCount)
 		
 		--Àë¿ªËùÓÐµÄµÀÂ·£¬»Ö¸´ÖØÁ¦Ð§¹û
 		if (self.collisionRoadCount == 0) then
@@ -1039,7 +1097,7 @@ function MainScene:gamePause()
         self.resumeSchedule = nil
     end
 
-    self.pigAnimation:setAnimation(0, "dead", true)
+    self.pigAnimation:setAnimation(0, "admation", true)
     self.world:stop()
     self.baseLayer:setTouchEnabled(false)
 

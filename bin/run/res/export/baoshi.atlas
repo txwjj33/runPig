@@ -1,0 +1,153 @@
+
+baoshi.png
+size: 1020,510
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+efc/blue
+  rotate: true
+  xy: 684, 56
+  size: 32, 34
+  orig: 34, 34
+  offset: 1, 0
+  index: -1
+efc/gold
+  rotate: true
+  xy: 720, 56
+  size: 32, 34
+  orig: 34, 34
+  offset: 1, 0
+  index: -1
+efc/yh1
+  rotate: true
+  xy: 628, 2
+  size: 23, 25
+  orig: 640, 480
+  offset: 282, 221
+  index: -1
+efc/yh10
+  rotate: true
+  xy: 534, 179
+  size: 158, 163
+  orig: 640, 480
+  offset: 214, 145
+  index: -1
+efc/yh11
+  rotate: false
+  xy: 702, 342
+  size: 162, 168
+  orig: 640, 480
+  offset: 212, 141
+  index: -1
+efc/yh12
+  rotate: false
+  xy: 534, 339
+  size: 166, 171
+  orig: 640, 480
+  offset: 210, 138
+  index: -1
+efc/yh13
+  rotate: false
+  xy: 359, 155
+  size: 170, 175
+  orig: 640, 480
+  offset: 208, 134
+  index: -1
+efc/yh14
+  rotate: false
+  xy: 359, 332
+  size: 173, 178
+  orig: 640, 480
+  offset: 207, 131
+  index: -1
+efc/yh15
+  rotate: false
+  xy: 181, 149
+  size: 176, 179
+  orig: 640, 480
+  offset: 205, 129
+  index: -1
+efc/yh16
+  rotate: false
+  xy: 2, 145
+  size: 177, 181
+  orig: 640, 480
+  offset: 205, 126
+  index: -1
+efc/yh17
+  rotate: false
+  xy: 2, 328
+  size: 177, 182
+  orig: 640, 480
+  offset: 204, 122
+  index: -1
+efc/yh18
+  rotate: false
+  xy: 181, 330
+  size: 176, 180
+  orig: 640, 480
+  offset: 205, 121
+  index: -1
+efc/yh2
+  rotate: false
+  xy: 573, 5
+  size: 53, 56
+  orig: 640, 480
+  offset: 268, 205
+  index: -1
+efc/yh3
+  rotate: false
+  xy: 684, 90
+  size: 85, 87
+  orig: 640, 480
+  offset: 252, 189
+  index: -1
+efc/yh4
+  rotate: false
+  xy: 573, 63
+  size: 109, 114
+  orig: 640, 480
+  offset: 239, 175
+  index: -1
+efc/yh5
+  rotate: false
+  xy: 139, 12
+  size: 124, 131
+  orig: 640, 480
+  offset: 231, 166
+  index: -1
+efc/yh6
+  rotate: false
+  xy: 2, 2
+  size: 135, 141
+  orig: 640, 480
+  offset: 225, 160
+  index: -1
+efc/yh7
+  rotate: true
+  xy: 265, 3
+  size: 144, 149
+  orig: 640, 480
+  offset: 221, 155
+  index: -1
+efc/yh8
+  rotate: true
+  xy: 416, 3
+  size: 150, 155
+  orig: 640, 480
+  offset: 218, 151
+  index: -1
+efc/yh9
+  rotate: false
+  xy: 866, 350
+  size: 154, 160
+  orig: 640, 480
+  offset: 216, 148
+  index: -1
+efc/yl
+  rotate: false
+  xy: 628, 27
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
