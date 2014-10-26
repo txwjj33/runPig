@@ -122,6 +122,23 @@ function MainScene:ctor()
     self.world = CCPhysicsWorld:create(0, GRAVITY)
     self:addChild(self.world)
 
+    local baseLayer = display.newLayer()
+	baseLayer:setTouchEnabled(true)
+    self:addChild(baseLayer)
+    baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
+    	print("addNodeEventListener")
+        if not self.started then
+            self.started = true
+            self:startGame()
+            self.world:start()
+        else
+            if (self.collisionRoadCount > 0) then
+                self:roleJump()
+            end
+        end
+    end)
+    self.baseLayer = baseLayer
+
     self:initUI()
     self:addLabel()
 
@@ -158,22 +175,6 @@ function MainScene:ctor()
         self:addChild(self.worldDebug)
     end
 
-    local baseLayer = display.newLayer()
-	baseLayer:setTouchEnabled(true)
-    self:addChild(baseLayer)
-    baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
-        if not self.started then
-            self.started = true
-            self:startGame()
-            self.world:start()
-        else
-            if (self.collisionRoadCount > 0) then
-                self:roleJump()
-            end
-        end
-    end)
-    self.baseLayer = baseLayer
-
     self.startLayerNode = CCNode:create()
     self:addChild(self.startLayerNode)
     self:addButtons()
@@ -209,6 +210,7 @@ function MainScene:startGame()
     end, SPEED_CHANGE_TIME)
 
     self.startLayerNode:setVisible(false)
+    self.getBtn:setTouchEnabled(false)
     self.pigAnimation:setAnimation(0, "run", true)
 
     self.callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
@@ -327,8 +329,9 @@ function MainScene:addJianzhu()
 end
 
 function MainScene:addLabel()
-    local height = 685
-    local heightDiamond = 625
+    local height = 625
+    local heightDiamond = 685
+    local widthDiamond = 1020
     local fontSize = 40
 
     self.scoreLabel = CCLabelTTF:create("0", DEFAULT_FONT, fontSize)
@@ -338,29 +341,37 @@ function MainScene:addLabel()
 
     maxScore = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_MAX_SCORE, 0)
     self.maxScoreLabel = CCLabelTTF:create(maxScore, DEFAULT_FONT, fontSize)
-    self.maxScoreLabel:setColor(ccc3(255,232,111))
-    self.maxScoreLabel:setPosition(1177, height)
+    self.maxScoreLabel:setColor(ccc3(255, 255, 255))
+    self.maxScoreLabel:setPosition(widthDiamond + 160, height)
     self.maxScoreLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(self.maxScoreLabel)
 
     local bestLabel = CCLabelTTF:create("最高分", DEFAULT_FONT, fontSize)
-    bestLabel:setColor(ccc3(255,232,111))
-    bestLabel:setPosition(1049, height)
+    bestLabel:setColor(ccc3(255, 255, 255))
+    bestLabel:setPosition(widthDiamond, height)
     bestLabel:setAnchorPoint(ccp(0, 0.5))
     self:addChild(bestLabel)
 
-    local diamondLabel = CCLabelTTF:create("钻石", DEFAULT_FONT, fontSize)
-    diamondLabel:setColor(ccc3(255,232,111))
-    diamondLabel:setPosition(1049, heightDiamond)
-    diamondLabel:setAnchorPoint(ccp(0, 0.5))
-    self:addChild(diamondLabel)
+    cc.ui.UIImage.new("interface_dilan.png")
+       :align(display.LEFT_CENTER, widthDiamond, heightDiamond)
+       :addTo(self)
+
+   	cc.ui.UIImage.new("icon_VG_02.png")
+       :align(display.CENTER, widthDiamond, heightDiamond)
+       :addTo(self)
 
     diamondCount = CCUserDefault:sharedUserDefault():getIntegerForKey(STRING_DIAMOND_COUNT, 0)
     self.diamondCountLabel = CCLabelTTF:create(diamondCount, DEFAULT_FONT, fontSize)
-    self.diamondCountLabel:setColor(ccc3(255,232,111))
-    self.diamondCountLabel:setPosition(1177, heightDiamond)
-    self.diamondCountLabel:setAnchorPoint(ccp(0, 0.5))
+    self.diamondCountLabel:setColor(ccc3(255, 255, 255))
+    self.diamondCountLabel:setPosition(widthDiamond + 175, heightDiamond)
+    self.diamondCountLabel:setAnchorPoint(ccp(1, 0.5))
     self:addChild(self.diamondCountLabel)
+
+    local function clickGet()
+    	self:showGetDiamondLayer()
+    end
+    self.getBtn = self:addAButton("button_goumai.png", clickGet, ccp(widthDiamond + 210, heightDiamond), 
+           display.CENTER, self)
 end
 
 function MainScene:addButtons()
@@ -429,8 +440,7 @@ function MainScene:addAButton(img, clickCallback, pos, anchor, parent)
 end
 
 function MainScene:addGamePauseButtons()
-    self.gamePauseNode = CCNode:create()
-    self:addChild(self.gamePauseNode)
+    self.gamePauseNode = self:addDialog()
 
     local fontSize = 50
 
@@ -459,23 +469,49 @@ function MainScene:addGamePauseButtons()
 
     local function clickShare()
        self:playSound("sounds/button.ogg")
-       LuaExport:showShareMenu("content", "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", "title", "des", "url")
+       LuaExport:showShareMenu(getShareTest(score), "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", getShareTitle(score), "des", "url")
     end
-    self:addAButton("button_fengxiang.png", clickShare, ccp(990, WIN_HEIGHT - 313), 
+    self:addAButton("button_fengxiang.png", clickShare, ccp(980, WIN_HEIGHT - 313), 
            display.TOP_RIGHT, self.gamePauseNode)
 
-    if diamondCount >= DIAMOND_RESUME_GAME_NEEDED then
-       local function clickResume()
-           diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
-           self.diamondCountLabel:setString(diamondCount)
-           CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
-           self.gamePauseNode:removeFromParent()
-           self:gameResume()
-           self.world:start()
-       end
-       local resumeBtn = self:addAButton("button_fuhuo.png", clickResume, ccp(WIN_WIDTH / 2 + 15, 221), 
-               display.CENTER_LEFT, self.gamePauseNode)
+   	local function clickResume()
+   		if diamondCount >= DIAMOND_RESUME_GAME_NEEDED then
+	       diamondCount = diamondCount - DIAMOND_RESUME_GAME_NEEDED
+	       self.diamondCountLabel:setString(diamondCount)
+	       CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
+	       self.gamePauseNode:removeFromParent()
+	       self:gameResume()
+	       self.world:start()
+	    else
+	    	self:showGetDiamondLayer()
+	    end
     end
+    local resumeBtn = self:addAButton("button_fuhuo.png", clickResume, ccp(WIN_WIDTH / 2 + 15, 221), 
+           display.CENTER_LEFT, self.gamePauseNode)
+end
+
+function MainScene:showGetDiamondLayer()
+	if self.getDiamondNode then return end
+
+	self.getDiamondNode = self:addDialog()
+
+    cc.ui.UIImage.new("lingqu.png")
+       :align(display.CENTER, WIN_WIDTH / 2, WIN_HEIGHT / 2)
+       :addTo(self.getDiamondNode)
+
+    local function clickGet()
+    	self.getDiamondNode:removeFromParent()
+    	self.getDiamondNode = nil
+    end
+    local getBtn = self:addAButton("interface_lingqulibao.png", clickGet, ccp(WIN_WIDTH / 2, 604), 
+           display.CENTER, self.getDiamondNode)
+
+    local function dismiss()
+    	self.getDiamondNode:removeFromParent()
+    	self.getDiamondNode = nil
+    end
+    self:addAButton("button_close.png", dismiss, ccp(915, 612), 
+           display.TOP_RIGHT, self.getDiamondNode)
 end
 
 local function getNums(path)
@@ -826,6 +862,12 @@ function MainScene:createRole()
     self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
     self.pigAnimation:setContentSize(roleSize)
 
+    self.wudiAnimation = self:createAnimation("baohuzhao")
+    self.wudiAnimation:setAnchorPoint(ccp(0.5, 0.5))
+    --self.wudiAnimation:setPosition(ccp(roleSize.width / 2, roleSize.height / 2))
+    self.pigAnimation:addChild(self.wudiAnimation)
+    self:setAnimation(self.wudiAnimation, "baohuzhao")
+
 	--local vexArray = CCPointArray:create(4)
 	--vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 2))
 	--vexArray:add(ccp(- roleSize.width / 2,   roleSize.height / 2))
@@ -1131,6 +1173,10 @@ function MainScene:gameResume()
     self.roleBody:setVelocity(ccp(0, 0))
     roleState = ROLE_STATE_FALL
 
+    
+
+
+
     wudiWhenResume = true
     if self.resumeSchedule then scheduler.unscheduleGlobal(self.resumeSchedule) end
     self.resumeSchedule = scheduler.scheduleGlobal(function()
@@ -1138,6 +1184,8 @@ function MainScene:gameResume()
         scheduler.unscheduleGlobal(self.resumeSchedule)
         self.resumeSchedule = nil
     end, resumeWudiTime)
+
+
 end
 
 function MainScene:resetParms()
@@ -1194,6 +1242,23 @@ function MainScene:callJavaFunc(className, methodName, args, sig)
     if ANDOIRD then
         luaj.callStaticMethod(className, methodName, args, sig)
     end
+end
+
+function MainScene:createAnimation(name)
+    return SkeletonAnimation:createWithFile("animation/" .. name .. ".json", "animation/" .. name .. ".atlas", 1)
+end
+
+function MainScene:setAnimation(animation, name)
+    animation:setAnimation(0, name, true)
+end
+
+function MainScene:addDialog()
+	local baseLayer = display.newLayer()
+	baseLayer:setTouchEnabled(true)
+    self:addChild(baseLayer)
+    baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
+    end)
+    return baseLayer
 end
 
 return MainScene

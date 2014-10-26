@@ -1,0 +1,13 @@
+
+baohuzhao.png
+size: 128,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+interface_guagzhao
+  rotate: false
+  xy: 2, 2
+  size: 97, 97
+  orig: 97, 97
+  offset: 0, 0
+  index: -1

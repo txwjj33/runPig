@@ -16,7 +16,7 @@ function StartScene:ctor()
 end
 
 function StartScene:onEnter()
-    display.replaceScene(require("scenes.MainScene").new(), "fade", 1.6, display.COLOR_WHITE)
+    display.replaceScene(require("scenes.MainScene").new(), "fade", 2.5, display.COLOR_WHITE)
 end
 
 return StartScene

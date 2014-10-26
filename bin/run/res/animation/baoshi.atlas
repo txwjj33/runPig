@@ -1,0 +1,145 @@
+
+baoshi.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+efc/gold
+  rotate: false
+  xy: 2, 2
+  size: 42, 33
+  orig: 42, 33
+  offset: 0, 0
+  index: -1
+efc/yh1
+  rotate: false
+  xy: 2, 658
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh10
+  rotate: false
+  xy: 659, 658
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh11
+  rotate: false
+  xy: 221, 37
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh12
+  rotate: false
+  xy: 440, 244
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh13
+  rotate: false
+  xy: 659, 451
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh14
+  rotate: false
+  xy: 440, 37
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh15
+  rotate: false
+  xy: 659, 244
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh16
+  rotate: false
+  xy: 659, 37
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh2
+  rotate: false
+  xy: 2, 451
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh3
+  rotate: false
+  xy: 221, 658
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh4
+  rotate: false
+  xy: 2, 244
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh5
+  rotate: false
+  xy: 221, 451
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh6
+  rotate: false
+  xy: 440, 658
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh7
+  rotate: false
+  xy: 2, 37
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh8
+  rotate: false
+  xy: 221, 244
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh9
+  rotate: false
+  xy: 440, 451
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+
+baoshi2.png
+size: 512,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+efc/yh17
+  rotate: false
+  xy: 2, 2
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1
+efc/yh18
+  rotate: false
+  xy: 221, 2
+  size: 217, 205
+  orig: 217, 205
+  offset: 0, 0
+  index: -1

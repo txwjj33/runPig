@@ -8,7 +8,7 @@ ANDOIRD = false
 DEFAULT_FONT = "AGENTORANGE.ttf"
 
 --开启以后所有仙人掌无效
-CHEAT_MODE = true
+CHEAT_MODE = false
 
 --钻石复活的无敌时间
 RESUME_WU_DI_TIME = 2
@@ -52,7 +52,7 @@ MAP_MOVE_SPEED_LIMIT = 730
 MAP_MOVE_SPEED_START = 480
 
 --继续游戏需要的钻石数量
-DIAMOND_RESUME_GAME_NEEDED = 3
+DIAMOND_RESUME_GAME_NEEDED = 50
 
 --跳跃的水平距离和垂直距离（格子数）
 JUMP_GE_ZI_HOR = 7
@@ -88,6 +88,36 @@ DIAMOND_SCORE = 100
 
 --关卡最大值
 LEVEL_MAX = 7
+
+SHARE_TEXT =
+{
+    {max = 5, str = "情场菜鸟"},
+    {max = 15, str = "情场老手"},
+    {max = 30, str = "情场专家"},
+    {max = 50, str = "情兽"},
+    {max = 100, str = "情圣"},
+    {max = 100000, str = "花丛浪子"},
+}
+
+function getchenhao(count)
+    local str = nil
+    for k, v in ipairs(SHARE_TEXT) do
+        if count <= v.max then
+            str = v.str
+            break
+        end
+    end
+    if not str then str = "花丛浪子" end
+    return str
+end
+
+function getShareTest(count)
+    return "我在这次猎艳之旅中跨过" .. count .. "个障碍，已经身经百战！获得了“" .. getchenhao(count) .. "”称号！"
+end
+
+function getShareTitle(count)
+    return "你已成为“" .. getchenhao(count) .. "”！"
+end
 
 --加入新的地图后用于检查地图
 checkMap = false
