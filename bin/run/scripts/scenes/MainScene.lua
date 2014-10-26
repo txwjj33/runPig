@@ -848,7 +848,7 @@ function MainScene:createRole()
     rolePosX = tilePos.x
     
     --self.pigAnimation = SkeletonAnimation:createWithFile("pig/skeleton.json", "pig/skeleton.atlas", 1)
-    self.pigAnimation = SkeletonAnimation:createWithFile("export/pig.json", "export/pig.atlas", 1)
+    self.pigAnimation = SkeletonAnimation:createWithFile("animation/pig.json", "animation/pig.atlas", 1)
     self.pigAnimation:setAnimation(0, "idle", true)
     self:addChild(self.pigAnimation)
 
@@ -864,9 +864,14 @@ function MainScene:createRole()
 
     self.wudiAnimation = self:createAnimation("baohuzhao")
     self.wudiAnimation:setAnchorPoint(ccp(0.5, 0.5))
-    --self.wudiAnimation:setPosition(ccp(roleSize.width / 2, roleSize.height / 2))
     self.pigAnimation:addChild(self.wudiAnimation)
     self:setAnimation(self.wudiAnimation, "baohuzhao")
+
+    -- self.yunxuanAnimation = self:createAnimation("yunxuan")
+    -- self.yunxuanAnimation:setAnchorPoint(ccp(0.5, 0.5))
+    -- self.yunxuanAnimation:setPosition(ccp(roleSize.width / 2, roleSize.height / 2))
+    -- self.pigAnimation:addChild(self.yunxuanAnimation)
+    -- self:setAnimation(self.yunxuanAnimation, "yunxuan")
 
 	--local vexArray = CCPointArray:create(4)
 	--vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 2))
