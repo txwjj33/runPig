@@ -379,14 +379,16 @@ function MainScene:addButtons()
     local showSetting = false
 
     local function updateCheckBoxButton(checkbox, confStr)
+        if checkbox:isButtonSelected() == CCUserDefault:sharedUserDefault():getBoolForKey(confStr, true) then
+            return 
+        end
+
         if checkbox:isButtonSelected() then
             CCUserDefault:sharedUserDefault():setBoolForKey(confStr, true)
             if confStr == STRING_MUSIC then
                 self:playMusic("sounds/start.ogg")
             else
-                if ANDOIRD then
-                    luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
-                end
+                self:vibrate()
             end
         else
             CCUserDefault:sharedUserDefault():setBoolForKey(confStr, false)
@@ -459,7 +461,6 @@ function MainScene:addGamePauseButtons()
     self.gamePauseNode:addChild(maxScoreLabel)
 
     local function clickTryAgain()
-       self:gameOver()
        self:playSound("sounds/button.ogg")
        package.loaded["scenes.MainScene"] = nil
        display.replaceScene(require("scenes.MainScene").new())
@@ -469,7 +470,8 @@ function MainScene:addGamePauseButtons()
 
     local function clickShare()
        self:playSound("sounds/button.ogg")
-       LuaExport:showShareMenu(getShareTest(score), "http://img0.bdstatic.com/img/image/shouye/systsy-11927417755.jpg", getShareTitle(score), "des", "url")
+       LuaExport:showShareMenu(getShareTest(score), "res/icon.png", 
+        getShareTitle(score), "des", "www.baidu.com")
     end
     self:addAButton("button_fengxiang.png", clickShare, ccp(980, WIN_HEIGHT - 313), 
            display.TOP_RIGHT, self.gamePauseNode)
@@ -520,7 +522,7 @@ function MainScene:showGetDiamondLayer()
         local javaMethodSig = "(I)V"
     	self:callJavaFunc("com/xwtan/run/Run", "payOrder", javaParams, javaMethodSig)
     end
-    local getBtn = self:addAButton("interface_lingqulibao.png", clickGet, ccp(WIN_WIDTH / 2, 604), 
+    local getBtn = self:addAButton("interface_lingqulibao.png", clickGet, ccp(WIN_WIDTH / 2, 156), 
            display.CENTER, self.getDiamondNode)
 
     local function dismiss()
@@ -1108,37 +1110,6 @@ function MainScene:onSeparate(event)
     return false
 end
 
-function MainScene:gameOver()
-    --if CHEAT_MODE then return end
-    --print("gameOver")
-
-    --isGamePause = true
-
-    --scheduler.unscheduleGlobal(self.updateSchedule)
-    --scheduler.unscheduleGlobal(self.updateSpeedSchedule)
-    --if self.jumpSchedule then
-    --    scheduler.unscheduleGlobal(self.jumpSchedule)
-    --    self.jumpSchedule = true
-    --end
-
-    --self.pigAnimation:setAnimation(0, "dead", true)
-    --self.world:stop()
-    --self.baseLayer:setTouchEnabled(false)
-
-    --if score > maxScore then
-    --    maxScore = score
-    --    self.maxScoreLabel:setString(maxScore)
-    --    CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_MAX_SCORE, maxScore)
-    --end
-
-    --self:addGamePauseButtons()
-    
-    --if ANDOIRD then
-    --    luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
-    --    luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
-    --end
-end
-
 function MainScene:gamePause()
     --if CHEAT_MODE then return end
     print("gamePause")
@@ -1176,7 +1147,7 @@ function MainScene:gamePause()
     
     if ANDOIRD then
         luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
-        luaj.callStaticMethod("com/xwtan/run/Run", "vibrate")
+        self:vibrate()
     end
 end
 

@@ -45,7 +45,7 @@ public class IAPListener implements OnPurchaseListener {
 		Message message = iapHandler.obtainMessage(IAPHandler.INIT_FINISH);
 		String result = "初始化结果：" + Purchase.getReason(code);
 		message.obj = result;
-		message.sendToTarget();
+		//message.sendToTarget();
 	}
 
 	@Override
