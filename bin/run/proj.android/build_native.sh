@@ -74,15 +74,7 @@ if [ -d "$file" -a "fonts" != "$file" ]; then
 fi
 done
 
-# copy scripts
-echo "copy scripts"
-mkdir "$APP_ANDROID_ROOT"/assets/scripts
-for file in "$APP_ROOT"/scripts
-do
-if [ -d "$file" -a "fonts" != "$file" ]; then
-	cp -rf "$file" "$APP_ANDROID_ROOT"/assets
-fi
-done
+./../../compile_scripts.bat -i "..\scripts" -o assets/res/line.png
 
 # copy assets
 echo "copy assets"

@@ -111,7 +111,8 @@ bool AppDelegate::applicationDidFinishLaunching()
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
     // load framework
-    pStack->loadChunksFromZIP("res/framework_precompiled.zip");
+	pStack->loadChunksFromZIP("res/framework_precompiled.zip");
+	pStack->loadChunksFromZIP("res/line.png");
 
 	tolua_talkingdata_open(m_state);
 	CCLog("init talking data");
@@ -119,7 +120,8 @@ bool AppDelegate::applicationDidFinishLaunching()
 	account->setAccountType(TDCCAccount::kAccountAnonymous);
 
     // set script path
-    string path = CCFileUtils::sharedFileUtils()->fullPathForFilename("scripts/main.lua");
+    string path = CCFileUtils::sharedFileUtils()->fullPathForFilename("main");
+	CCLOG("path:%s", path);
 #else
     // load framework
     if (m_projectConfig.isLoadPrecompiledFramework())
