@@ -103,3 +103,12 @@ else
     "$NDK_ROOT"/ndk-build -C "$APP_ANDROID_ROOT" $* \
         "NDK_MODULE_PATH=${QUICK}:${COCOS2DX_ROOT}:${COCOS2DX_ROOT}/cocos2dx/platform/third_party/android/prebuilt"
 fi
+
+# copy so
+echo "copy so"
+for file in "$APP_ANDROID_ROOT"/armeabi
+do
+if [ -d "$file" -a "fonts" != "$file" ]; then
+    cp -rf "$file" "$APP_ANDROID_ROOT"/libs
+fi
+done

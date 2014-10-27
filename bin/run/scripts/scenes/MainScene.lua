@@ -213,7 +213,7 @@ function MainScene:startGame()
     self.getBtn:setTouchEnabled(false)
     self.pigAnimation:setAnimation(0, "run", true)
 
-    self.callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
+    self:callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
 
     updateBodySpeed()
 end
@@ -490,6 +490,16 @@ function MainScene:addGamePauseButtons()
            display.CENTER_LEFT, self.gamePauseNode)
 end
 
+function MainScene:onPayment(event)
+    print(event)
+    if event == "true" then
+        diamondCount = diamondCount + 300
+        self.diamondCountLabel:setString(diamondCount)
+        CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
+        self:showBubbleTint("领取成功！")
+    end
+end
+
 function MainScene:showGetDiamondLayer()
 	if self.getDiamondNode then return end
 
@@ -502,6 +512,13 @@ function MainScene:showGetDiamondLayer()
     local function clickGet()
     	self.getDiamondNode:removeFromParent()
     	self.getDiamondNode = nil
+        local javaParams = {
+            function(event)
+                self:onPayment(event)
+            end
+        }
+        local javaMethodSig = "(I)V"
+    	self:callJavaFunc("com/xwtan/run/Run", "payOrder", javaParams, javaMethodSig)
     end
     local getBtn = self:addAButton("interface_lingqulibao.png", clickGet, ccp(WIN_WIDTH / 2, 604), 
            display.CENTER, self.getDiamondNode)
@@ -692,7 +709,7 @@ function MainScene:addShapesAtPos(x, body, map)
 			        local shape = body:addPolygonShape(vertexes)
                     shape:setCollisionType(v)
 
-                    local baoshiAnimation = SkeletonAnimation:createWithFile("export/baoshi.json", "export/baoshi.atlas", 1)
+                    local baoshiAnimation = self:createAnimation("baoshi")
                     baoshiAnimation:setAnimation(0, "animation", true)
                     baoshiAnimation:setPosition(ccp(tile:getPosition()))
                     map:addChild(baoshiAnimation)
@@ -866,6 +883,7 @@ function MainScene:createRole()
     self.wudiAnimation:setAnchorPoint(ccp(0.5, 0.5))
     self.pigAnimation:addChild(self.wudiAnimation)
     self:setAnimation(self.wudiAnimation, "baohuzhao")
+    self.wudiAnimation:setVisible(false)
 
     -- self.yunxuanAnimation = self:createAnimation("yunxuan")
     -- self.yunxuanAnimation:setAnchorPoint(ccp(0.5, 0.5))
@@ -1178,9 +1196,7 @@ function MainScene:gameResume()
     self.roleBody:setVelocity(ccp(0, 0))
     roleState = ROLE_STATE_FALL
 
-    
-
-
+    self.wudiAnimation:setVisible(true)
 
     wudiWhenResume = true
     if self.resumeSchedule then scheduler.unscheduleGlobal(self.resumeSchedule) end
@@ -1188,9 +1204,8 @@ function MainScene:gameResume()
         wudiWhenResume = false
         scheduler.unscheduleGlobal(self.resumeSchedule)
         self.resumeSchedule = nil
+        self.wudiAnimation:setVisible(false)
     end, resumeWudiTime)
-
-
 end
 
 function MainScene:resetParms()
@@ -1264,6 +1279,84 @@ function MainScene:addDialog()
     baseLayer:addNodeEventListener(cc.NODE_TOUCH_EVENT, function()
     end)
     return baseLayer
+end
+
+local bubbleNode = nil
+local function bubbleFadeBase(isRemoveAtFinished, labelBackground, label, duration, delay, distanceY)
+    if not label then return end
+    if bubbleNode and bubbleNode.removeFromParent then
+        bubbleNode:removeFromParent()
+        bubbleNode = nil
+    end
+
+    if labelBackground then
+        bubbleNode = labelBackground
+        label:setAnchorPoint(ccp(0.5, 0.5))
+        local size = labelBackground:getContentSize()
+        label:setPosition(ccp(size.width / 2, size.height / 2))
+        bubbleNode:addChild(label)
+    else
+        bubbleNode = label
+    end
+    local scene = CCDirector:sharedDirector():getRunningScene()
+    scene:addChild(bubbleNode, 10000)
+
+    local function finish()
+        if isRemoveAtFinished then
+            bubbleNode:removeFromParent()
+            collectgarbage("collect")
+            collectgarbage("collect")
+            bubbleNode = nil
+        end
+    end
+
+    local pDuration = duration or 0.5
+    local pDelay = delay or 0.5
+    local pDistanceY = distanceY or 50
+
+    local moveUp = CCMoveBy:create(pDuration, ccp(0, pDistanceY))
+    local fadeOut = CCFadeTo:create(pDuration, 0)
+    local spawnAction = CCSpawn:createWithTwoActions(moveUp, fadeOut)
+    local delayAction = CCDelayTime:create(pDelay)
+    local onFinished = CCCallFunc:create(finish)
+    local moveAction = CCSequence:createWithTwoActions(delayAction, spawnAction)
+    local action = CCSequence:createWithTwoActions(moveAction, onFinished)
+
+    bubbleNode:runAction(action)
+end
+
+function MainScene.showBubbleTint(tintMsg, startPos, duration, delay, distanceY)
+    local bigFontSize = 28
+    local smallFontSize = 20
+    local color = ccWHITE
+
+    --检测是否能显示label的全部
+    local function checkCanShowLabel(label, pos)
+        local width = label:getContentSize().width
+        if pos.x + width / 2 > WIN_WIDTH or pos.x < width / 2 then
+            return false
+        else
+            return true
+        end
+    end
+
+    local pStartPos = startPos or ccp(WIN_WIDTH / 2, WIN_HEIGHT / 2)
+    local label = M.createLabelTTF(tintMsg, pStartPos.x, pStartPos.y, color, bigFontSize)
+    --label放不下，把字体缩小
+    if not checkCanShowLabel(label, pStartPos) then
+        label:setFontSize(smallFontSize)
+        --还放不下，把label移到中间
+        if not checkCanShowLabel(label, pStartPos) then
+            local centerPos = ccp(WIN_WIDTH / 2, WIN_HEIGHT / 2)
+            label:setPosition(centerPos)
+            label:setFontSize(bigFontSize)
+            if not checkCanShowLabel(label, centerPos) then
+                label:setFontSize(smallFontSize)
+            end
+        end
+    end
+
+    bubbleFadeBase(true, nil, label, duration, delay, distanceY)
 end
 
 return MainScene

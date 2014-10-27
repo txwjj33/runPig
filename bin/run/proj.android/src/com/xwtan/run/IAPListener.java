@@ -64,6 +64,8 @@ public class IAPListener implements OnPurchaseListener {
 		
 		String ordertype = null;
 		if (code == PurchaseCode.ORDER_OK || (code == PurchaseCode.AUTH_OK) ||(code == PurchaseCode.WEAK_ORDER_OK)) {
+			Run.getInstance().runPaycallback("true");
+			
 			/**
 			 * 商品购买成功或者已经购买。 此时会返回商品的paycode，orderID,以及剩余时间(租赁类型商品)
 			 */
@@ -93,6 +95,7 @@ public class IAPListener implements OnPurchaseListener {
 			/**
 			 * 表示订购失败。
 			 */
+			Run.getInstance().runPaycallback("false");
 			result = "订购结果：" + Purchase.getReason(code);
 		}
 		context.dismissProgressDialog();

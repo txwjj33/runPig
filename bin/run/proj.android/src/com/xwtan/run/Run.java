@@ -23,9 +23,12 @@ THE SOFTWARE.
 ****************************************************************************/
 package com.xwtan.run;
 
+import mm.purchasesdk.Purchase;
+
 import org.cocos2dx.lib.Cocos2dxActivity;
 import org.cocos2dx.lib.Cocos2dxHelper;
 import org.cocos2dx.lib.Cocos2dxGLSurfaceView;
+import org.cocos2dx.lib.Cocos2dxLuaJavaBridge;
 import org.cocos2dx.plugin.PluginWrapper;
 
 import cn.sharesdk.ShareSDKUtils;
@@ -55,14 +58,26 @@ import com.tendcloud.tenddata.TalkingDataGA;
 public class Run extends Cocos2dxActivity {
 	static private Run sInstance;
 	
+	public static int payCallback;
+	
 	//芒果广告
 	private static Handler handler;
 	private static RelativeLayout bannerLayout;
 	private AdsMogoLayout adView;
+
+	static private IAPListener mListener;
 	//private static String mogoAppid = "8f6c1a9a237a49c9bfd9c4dae5c192a2";
 	private static String mogoAppid = "93535c6092f543e8a257ee435a69da06";
 	
 	private static Cocos2dxActivity context;
+	
+	public static Purchase purchase;
+	
+	// 计费信息 (现网环境)
+	private static final String APPID = "300008569299";
+	private static final String APPKEY = "2D2373597242AF19";
+	// 计费点信息
+	private static final String LEASE_PAYCODE = "30000856929901";
 	
     public static Run getInstance() { return sInstance; }
 
@@ -79,6 +94,23 @@ public class Run extends Cocos2dxActivity {
 		context = (Cocos2dxActivity) Cocos2dxActivity.getContext();
 		
 		ShareSDKUtils.prepare();
+		
+		IAPHandler iapHandler = new IAPHandler(this);
+		mListener = new IAPListener(this, iapHandler);
+		purchase = Purchase.getInstance();
+		try {
+			purchase.setAppInfo(APPID, APPKEY);
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			purchase.init(this, mListener);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
 		
 	}
 	
@@ -400,6 +432,28 @@ public class Run extends Cocos2dxActivity {
 	public void dismissProgressDialog() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	
+	public static void payOrder(final int payCallbackFunction){
+		payCallback = payCallbackFunction;
+		try {
+			String tradeid = purchase.order(sInstance, LEASE_PAYCODE, mListener);
+		}catch (Exception e1) {
+			//
+			e1.printStackTrace();
+			return;
+		}
+	}
+	
+	public static void runPaycallback(final String parms){
+		sInstance.runOnGLThread(new Runnable() {
+            @Override
+            public void run() {
+                Cocos2dxLuaJavaBridge.callLuaFunctionWithString(payCallback, parms);
+                Cocos2dxLuaJavaBridge.releaseLuaFunction(payCallback);
+            }
+        });
 	}
 
 }
