@@ -470,8 +470,8 @@ function MainScene:addGamePauseButtons()
 
     local function clickShare()
        self:playSound("sounds/button.ogg")
-       LuaExport:showShareMenu(getShareTest(score), "res/icon.png", 
-        getShareTitle(score), "des", "www.baidu.com")
+       LuaExport:showShareMenu(getShareTest(score), "/assets/res/icon.png", 
+        getShareTitle(score), "des", "http://estoredwnld7.189store.com/static/iapks/game/test/maidou.apk")
     end
     self:addAButton("button_fengxiang.png", clickShare, ccp(980, WIN_HEIGHT - 313), 
            display.TOP_RIGHT, self.gamePauseNode)

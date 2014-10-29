@@ -66,8 +66,7 @@ public class Run extends Cocos2dxActivity {
 	private AdsMogoLayout adView;
 
 	static private IAPListener mListener;
-	//private static String mogoAppid = "8f6c1a9a237a49c9bfd9c4dae5c192a2";
-	private static String mogoAppid = "93535c6092f543e8a257ee435a69da06";
+	private static String mogoAppid = "8f6c1a9a237a49c9bfd9c4dae5c192a2";
 	
 	private static Cocos2dxActivity context;
 	

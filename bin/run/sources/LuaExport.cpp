@@ -24,8 +24,9 @@ void LuaExport::showShareMenu(const char *content, const char* image, const char
 {
 	CCDictionary *dic = CCDictionary::create();
 	dic->setObject(CCString::create(content), "content");
-	//dic->setObject(CCString::create(image), "image");
-	dic->setObject(CCString::create(image), "imagePath");
+	string path = CCFileUtils::sharedFileUtils()->fullPathForFilename(image);
+	CCLog("path:%s", path.c_str());
+	dic->setObject(CCString::create(image), "image");
 	dic->setObject(CCString::create(title), "title");
 	dic->setObject(CCString::create(des), "description");
 	dic->setObject(CCString::create(url), "url");

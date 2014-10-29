@@ -16,6 +16,7 @@ import android.content.Context;
 import android.os.Message;
 import android.os.Handler.Callback;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class ShareSDKUtils {
 	private static boolean DEBUG = true;
@@ -199,6 +200,7 @@ public class ShareSDKUtils {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("text", content.get("content"));
 		String image = (String) content.get("image");
+		Log.d("nativeMapToJavaMap", image);
 		if (image != null && image.startsWith("/")) {
 			map.put("imagePath", image);
 		} else if(!TextUtils.isEmpty(image)){

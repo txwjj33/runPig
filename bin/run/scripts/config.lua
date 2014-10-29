@@ -3,7 +3,7 @@
 DEBUG = 1
 DEBUG_FPS = true
 
-ANDOIRD = false
+ANDOIRD = true
 
 DEFAULT_FONT = "AGENTORANGE.ttf"
 
