@@ -470,7 +470,7 @@ function MainScene:addGamePauseButtons()
 
     local function clickShare()
        self:playSound("sounds/button.ogg")
-       LuaExport:showShareMenu(getShareTest(score), "/assets/res/icon.png", 
+       LuaExport:showShareMenu(getShareTest(score), SHARE_IMAGE, 
         getShareTitle(score), "des", "http://estoredwnld7.189store.com/static/iapks/game/test/maidou.apk")
     end
     self:addAButton("button_fengxiang.png", clickShare, ccp(980, WIN_HEIGHT - 313), 
@@ -712,14 +712,14 @@ function MainScene:addShapesAtPos(x, body, map)
                     shape:setCollisionType(v)
 
                     local baoshiAnimation = self:createAnimation("baoshi")
-                    baoshiAnimation:setAnimation(0, "animation", true)
+                    baoshiAnimation:setAnimation(0, "bs1", true)
                     baoshiAnimation:setPosition(ccp(tile:getPosition()))
                     map:addChild(baoshiAnimation)
 
                     tile:removeFromParent()
 
                     if v == COLLISION_TYPE_DIAMOND then
-                        diamondTable[shape] = tile
+                        diamondTable[shape] = baoshiAnimation
                     end
                 end
             end
@@ -881,18 +881,6 @@ function MainScene:createRole()
     self.pigAnimation:setAnchorPoint(ccp(0, 0.5))
     self.pigAnimation:setContentSize(roleSize)
 
-    self.wudiAnimation = self:createAnimation("baohuzhao")
-    self.wudiAnimation:setAnchorPoint(ccp(0.5, 0.5))
-    self.pigAnimation:addChild(self.wudiAnimation)
-    self:setAnimation(self.wudiAnimation, "baohuzhao")
-    self.wudiAnimation:setVisible(false)
-
-    -- self.yunxuanAnimation = self:createAnimation("yunxuan")
-    -- self.yunxuanAnimation:setAnchorPoint(ccp(0.5, 0.5))
-    -- self.yunxuanAnimation:setPosition(ccp(roleSize.width / 2, roleSize.height / 2))
-    -- self.pigAnimation:addChild(self.yunxuanAnimation)
-    -- self:setAnimation(self.yunxuanAnimation, "yunxuan")
-
 	--local vexArray = CCPointArray:create(4)
 	--vexArray:add(ccp(- roleSize.width / 2, - roleSize.height / 2))
 	--vexArray:add(ccp(- roleSize.width / 2,   roleSize.height / 2))
@@ -1025,9 +1013,13 @@ function MainScene:onCollisionBegin(event)
             diamondCount = diamondCount + 1
             self.diamondCountLabel:setString(diamondCount)
             CCUserDefault:sharedUserDefault():setIntegerForKey(STRING_DIAMOND_COUNT, diamondCount)
-            diamondTable[shape2]:removeFromParent()
+            --diamondTable[shape2]:removeFromParent()
             body2:removeShape(shape2)
             self:playSound("sounds/diamond.ogg")
+
+            --diamondTable[shape2]:removeFromParent()
+            self:setAnimation(diamondTable[shape2], "bs2", false)
+            --self:removeAniamtionWhenFinish(diamondTable[shape2], "bs2")
             --print("remove diamond")
         elseif collisionType == COLLISION_TYPE_BOTTOM_LINE then
             if wudiWhenResume then
@@ -1057,12 +1049,34 @@ function MainScene:onCollisionBegin(event)
                 scheduler.unscheduleGlobal(self.updateSchedule)
                 scheduler.unscheduleGlobal(self.updateSpeedSchedule)
                 self.collisionLeft = true
+                self:setAnimation(self.pigAnimation, "dead1", false)
             else
+                self:setAnimation(self.pigAnimation, "idle2")
                 self:gamePause()
             end
         --遇到仙人掌了
         else
             if CHEAT_MODE or wudi or wudiWhenResume then return false end
+
+            local animationName = 
+            {
+                COLLISION_TYPE_STUCK1 = "dead3",
+                COLLISION_TYPE_STUCK2 = "dead4",
+                COLLISION_TYPE_STUCK3 = "dead4",
+                COLLISION_TYPE_STUCK4 = "dead4",
+            }
+
+            local name = nil
+
+            if roleState == ROLE_STATE_ROAD then
+                name = "dead4"
+            else
+                name = animationName[collisionType]
+            end
+            name = name or "dead4"
+
+            print("play animation: " .. name)
+            self:setAnimation(self.pigAnimation, name)
 
             if stuckShapeTable[shape2] then
                 local map = body2:getNode()
@@ -1133,7 +1147,7 @@ function MainScene:gamePause()
         self.resumeSchedule = nil
     end
 
-    self.pigAnimation:setAnimation(0, "admation", true)
+    --self.pigAnimation:setAnimation(0, "admation", true)
     self.world:stop()
     self.baseLayer:setTouchEnabled(false)
 
@@ -1167,7 +1181,12 @@ function MainScene:gameResume()
     self.roleBody:setVelocity(ccp(0, 0))
     roleState = ROLE_STATE_FALL
 
-    self.wudiAnimation:setVisible(true)
+    if self.wudiAnimation then
+        self.wudiAnimation:removeFromParent()
+    end
+    self.wudiAnimation = self:createAnimation("baohuzhao")
+    self.wudiAnimation:setAnchorPoint(ccp(0.5, 0.5))
+    self.pigAnimation:addChild(self.wudiAnimation)
 
     wudiWhenResume = true
     if self.resumeSchedule then scheduler.unscheduleGlobal(self.resumeSchedule) end
@@ -1175,7 +1194,7 @@ function MainScene:gameResume()
         wudiWhenResume = false
         scheduler.unscheduleGlobal(self.resumeSchedule)
         self.resumeSchedule = nil
-        self.wudiAnimation:setVisible(false)
+        self:setAnimation(self.wudiAnimation, "bhz", false)
     end, resumeWudiTime)
 end
 
@@ -1239,8 +1258,9 @@ function MainScene:createAnimation(name)
     return SkeletonAnimation:createWithFile("animation/" .. name .. ".json", "animation/" .. name .. ".atlas", 1)
 end
 
-function MainScene:setAnimation(animation, name)
-    animation:setAnimation(0, name, true)
+function MainScene:setAnimation(animation, name, loop)
+    if loop == nil then loop = true end
+    animation:setAnimation(0, name, loop)
 end
 
 function MainScene:addDialog()
@@ -1296,7 +1316,7 @@ local function bubbleFadeBase(isRemoveAtFinished, labelBackground, label, durati
     bubbleNode:runAction(action)
 end
 
-function MainScene.showBubbleTint(tintMsg, startPos, duration, delay, distanceY)
+function MainScene:showBubbleTint(tintMsg, startPos, duration, delay, distanceY)
     local bigFontSize = 28
     local smallFontSize = 20
     local color = ccWHITE
@@ -1328,6 +1348,17 @@ function MainScene.showBubbleTint(tintMsg, startPos, duration, delay, distanceY)
     end
 
     bubbleFadeBase(true, nil, label, duration, delay, distanceY)
+end
+
+function MainScene:removeAniamtionWhenFinish(animation, name)
+    local updateSchedule = scheduler.scheduleUpdateGlobal(function(dt)
+        print("animation remove 11") 
+        if not animation:isPlayAnimation(name) then
+            print("animation remove")
+            animation:removeFromParent()
+            scheduler.unscheduleGlobal(updateSchedule)
+        end
+    end)
 end
 
 return MainScene

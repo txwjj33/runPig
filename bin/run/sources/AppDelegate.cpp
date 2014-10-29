@@ -85,13 +85,13 @@ bool AppDelegate::applicationDidFinishLaunching()
 	 //初始化社交平台信息
 	 this -> initPlatformConfig();
 
-	//C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
-	//C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
-	//C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);
+	C2DXShareSDK::authorize(C2DXPlatTypeSinaWeibo, authResultHandler);
+	C2DXShareSDK::authorize(C2DXPlatTypeWeixiSession, authResultHandler);
+	C2DXShareSDK::authorize(C2DXPlatTypeWeixiTimeline, authResultHandler);
 
-	//C2DXShareSDK::getUserInfo(C2DXPlatTypeSinaWeibo, getUserResultHandler);
-	//C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiSession, getUserResultHandler);
-	//C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiTimeline, getUserResultHandler);
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeSinaWeibo, getUserResultHandler);
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiSession, getUserResultHandler);
+	C2DXShareSDK::getUserInfo(C2DXPlatTypeWeixiTimeline, getUserResultHandler);
 
     // initialize director
     CCDirector *pDirector = CCDirector::sharedDirector();
@@ -194,8 +194,8 @@ void AppDelegate::initPlatformConfig()
 {
 	//新浪微博
 	CCDictionary *sinaConfigDict = CCDictionary::create();
-	sinaConfigDict -> setObject(CCString::create("568898243"), "app_key");
-	sinaConfigDict -> setObject(CCString::create("38a4f8204cc784f81f9f0daaf31e02e3"), "app_secret");
+	sinaConfigDict -> setObject(CCString::create("1289112445"), "app_key");
+	sinaConfigDict -> setObject(CCString::create("a6bf0d9b479c3d889537823865fc4e23"), "app_secret");
 	sinaConfigDict -> setObject(CCString::create("http://www.sharesdk.cn"), "redirect_uri");
 	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeSinaWeibo, sinaConfigDict);
 
@@ -205,7 +205,7 @@ void AppDelegate::initPlatformConfig()
 
 	//微信
 	CCDictionary *wcConfigDict = CCDictionary::create();
-	wcConfigDict -> setObject(CCString::create("wx4868b35061f87885"), "app_id");
+	wcConfigDict -> setObject(CCString::create("wx54550c92d6e72ce2"), "app_id");
 	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiSession, wcConfigDict);
 	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiTimeline, wcConfigDict);
 	C2DXShareSDK::setPlatformConfig(C2DXPlatTypeWeixiFav, wcConfigDict);

@@ -1,9 +1,10 @@
+SHARE_IMAGE = "http://ww3.sinaimg.cn/large/005Mkwjugw1elowt1dc6kj303c03cglk.jpg"
 
 -- 0 - disable debug info, 1 - less debug info, 2 - verbose debug info
 DEBUG = 1
 DEBUG_FPS = true
 
-ANDOIRD = true
+ANDOIRD = false
 
 DEFAULT_FONT = "AGENTORANGE.ttf"
 
@@ -112,6 +113,9 @@ function getchenhao(count)
 end
 
 function getShareTest(count)
+    if count < SHARE_TEXT[1].max then
+        return "我在猎艳之旅中才跨过了" .. count .. "个障碍，就已经不行了呢，果然还是个“情场小菜鸟”，谁来陪我练练？"
+    end
     return "我在这次猎艳之旅中跨过" .. count .. "个障碍，已经身经百战！获得了“" .. getchenhao(count) .. "”称号！"
 end
 
