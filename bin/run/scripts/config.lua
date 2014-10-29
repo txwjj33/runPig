@@ -4,7 +4,7 @@ SHARE_IMAGE = "http://ww3.sinaimg.cn/large/005Mkwjugw1elowt1dc6kj303c03cglk.jpg"
 DEBUG = 1
 DEBUG_FPS = true
 
-ANDOIRD = false
+ANDOIRD = true
 
 DEFAULT_FONT = "AGENTORANGE.ttf"
 
@@ -34,7 +34,7 @@ MAP_TEST_FILES =
 }
 
 --开启碰撞检测区域显示
-DEBUG_COLLSION = true
+DEBUG_COLLSION = false
 
 math.randomseed(os.time())
 

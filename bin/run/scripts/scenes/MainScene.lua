@@ -713,7 +713,7 @@ function MainScene:addShapesAtPos(x, body, map)
 
                     local baoshiAnimation = self:createAnimation("baoshi")
                     baoshiAnimation:setAnimation(0, "bs1", true)
-                    baoshiAnimation:setPosition(ccp(tile:getPosition()))
+                    baoshiAnimation:setPosition(ccpAdd(ccp(tile:getPosition()), ccp(20, 0)))
                     map:addChild(baoshiAnimation)
 
                     tile:removeFromParent()
