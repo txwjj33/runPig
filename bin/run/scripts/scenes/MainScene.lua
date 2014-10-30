@@ -214,6 +214,7 @@ function MainScene:startGame()
     self.pigAnimation:setAnimation(0, "run", true)
 
     self:callJavaFunc("com/xwtan/run/Run", "closeInterstitial")
+    self:callJavaFunc("com/xwtan/run/Run", "hideBannerStatic")
 
     updateBodySpeed()
 end
@@ -471,7 +472,7 @@ function MainScene:addGamePauseButtons()
     local function clickShare()
        self:playSound("sounds/button.ogg")
        LuaExport:showShareMenu(getShareTest(score), SHARE_IMAGE, 
-        getShareTitle(score), "des", "http://estoredwnld7.189store.com/static/iapks/game/test/maidou.apk")
+        getShareTitle(score), "des", SHARE_APK_URL)
     end
     self:addAButton("button_fengxiang.png", clickShare, ccp(980, WIN_HEIGHT - 313), 
            display.TOP_RIGHT, self.gamePauseNode)
@@ -490,6 +491,11 @@ function MainScene:addGamePauseButtons()
     end
     local resumeBtn = self:addAButton("button_fuhuo.png", clickResume, ccp(WIN_WIDTH / 2 + 15, 221), 
            display.CENTER_LEFT, self.gamePauseNode)
+
+    local costDiamondLabel = CCLabelTTF:create(DIAMOND_RESUME_GAME_NEEDED, DEFAULT_FONT, 30)
+    costDiamondLabel:setColor(ccc3(14,78,124))
+    costDiamondLabel:setPosition(215, 0)
+    resumeBtn:addChild(costDiamondLabel)
 end
 
 function MainScene:onPayment(event)
@@ -1027,6 +1033,7 @@ function MainScene:onCollisionBegin(event)
                 return false
             end
 
+            self:setAnimation(self.pigAnimation, "dead4")
             self:gamePause()
         elseif collisionType == COLLISION_TYPE_ROAD_LEFT then
             if wudiWhenResume then
@@ -1051,7 +1058,7 @@ function MainScene:onCollisionBegin(event)
                 self.collisionLeft = true
                 self:setAnimation(self.pigAnimation, "dead1", false)
             else
-                self:setAnimation(self.pigAnimation, "idle2")
+                self:setAnimation(self.pigAnimation, "dead1", false)
                 self:gamePause()
             end
         --遇到仙人掌了
@@ -1160,7 +1167,11 @@ function MainScene:gamePause()
     self:addGamePauseButtons()
     
     if ANDOIRD then
-        luaj.callStaticMethod("com/xwtan/run/Run", "showInterstitialStatic")
+        local rate = math.random(1, 3)
+        if rate == 1 then
+            self:callJavaFunc("com/xwtan/run/Run", "showInterstitialStatic")
+        end
+        self:callJavaFunc("com/xwtan/run/Run", "showBannerStatic")
         self:vibrate()
     end
 end
@@ -1205,9 +1216,8 @@ function MainScene:resetParms()
 end
 
 function MainScene:onEnter()
-    if ANDOIRD then
-        luaj.callStaticMethod("com/xwtan/run/Run", "showBannerStatic")
-    end
+    self:callJavaFunc("com/xwtan/run/Run", "initBannerStatic")
+    self:callJavaFunc("com/xwtan/run/Run", "showBannerStatic")
 end
 
 function MainScene:onExit()

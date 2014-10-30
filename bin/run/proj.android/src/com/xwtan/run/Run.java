@@ -154,9 +154,15 @@ public class Run extends Cocos2dxActivity {
     }
     
     //芒果广告香瓜
-    public static void showBannerStatic() {
+    public static void initBannerStatic() {
 		Message msg = handler.obtainMessage();
 		msg.what = 0;
+		handler.sendMessage(msg);
+	}
+    
+    public static void showBannerStatic() {
+		Message msg = handler.obtainMessage();
+		msg.what = -1;
 		handler.sendMessage(msg);
 	}
 
@@ -195,6 +201,18 @@ public class Run extends Cocos2dxActivity {
 			adView
 					.setVisibility(adView.getVisibility() == View.VISIBLE ? View.GONE
 							: View.VISIBLE);
+		}
+	}
+	
+	public void onClickHide() {
+		if (adView != null) {
+			adView.setVisibility(View.GONE);
+		}
+	}
+	
+	public void onClickShow() {
+		if (adView != null) {
+			adView.setVisibility(View.VISIBLE);
 		}
 	}
 	
@@ -395,7 +413,10 @@ public class Run extends Cocos2dxActivity {
 					}
 					break;
 				case 1:
-					onClickHideShow();
+					onClickHide();
+					break;
+				case -1:
+					onClickShow();
 					break;
 				case 3:
 					/**
