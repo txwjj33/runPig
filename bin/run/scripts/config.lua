@@ -1,5 +1,5 @@
 SHARE_IMAGE = "http://ww3.sinaimg.cn/large/005Mkwjugw1elowt1dc6kj303c03cglk.jpg"
-SHARE_APK_URL = "http://t.cn/R79sCPK"
+SHARE_APK_URL = "http://estoredwnld7.189store.com/static/iapks/game/test/maidou.html"
 
 -- 0 - disable debug info, 1 - less debug info, 2 - verbose debug info
 DEBUG = 1
@@ -80,7 +80,7 @@ ROLE_POS_X = 5
 ROLE_POS_Y = 5
 
 --同时显示几列的碰撞形状
-ROAD_SHAPE_NUM = 20
+ROAD_SHAPE_NUM = 25
 
 WIN_WIDTH = 1280
 WIN_HEIGHT = 720
