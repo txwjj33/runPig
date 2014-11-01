@@ -79,17 +79,17 @@
             android:exported="true" >
 
             <!-- android:process="mm.iapServices" > -->
-            <intent-filter android:priority="300" >
+            <intent-filter android:priority="301" >
                 <action android:name="com.aspire.purchaseservice.BIND" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <intent-filter android:priority="300" >
+            <intent-filter android:priority="301" >
                 <action android:name="com.xwtan.run.purchaseservice.BIND" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>            
-            <intent-filter android:priority="300" >
+            <intent-filter android:priority="301" >
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.SAFIAP.COMPONENT" >
@@ -102,7 +102,7 @@
             android:name="mm.purchasesdk.iapservice.BillingLayoutActivity"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@android:style/Theme.Translucent" >
-            <intent-filter android:priority="300" >
+            <intent-filter android:priority="301" >
                 <action android:name="com.xwtan.run.com.mmiap.activity" />
 
                 <category android:name="android.intent.category.DEFAULT" />
