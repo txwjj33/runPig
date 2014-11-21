@@ -73,10 +73,10 @@ public class Run extends Cocos2dxActivity {
 	public static Purchase purchase;
 	
 	// 计费信息 (现网环境)
-	private static final String APPID = "300008569299";
-	private static final String APPKEY = "2D2373597242AF19";
+	private static final String APPID = "300008698216";
+	private static final String APPKEY = "F207B65984ABA8CE574EF3D25C6675E5";
 	// 计费点信息
-	private static final String LEASE_PAYCODE = "30000856929901";
+	private static final String LEASE_PAYCODE = "30000869821601";
 	
     public static Run getInstance() { return sInstance; }
 
